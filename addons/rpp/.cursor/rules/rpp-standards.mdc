@@ -1,0 +1,27 @@
+---
+description: RPP pipeline conventions for Republic delegate attendance analysis
+alwaysApply: true
+---
+
+# RPP pipeline
+
+- Metric name is **RPP** only (no PRP in new code, manifests, or outputs)
+- **Presence-based RPP:** row-mean deviation + optional L2 norm
+- **Passport-based RPP:** `rpp_from_passport` with `pd.PeriodIndex`
+- Never use `pd.to_datetime` for years before 1678 — use `pd.Period`
+
+# Pattern authority
+
+- Designate one canonical pattern source per era in `AGENTS.md` and `data_manifest.toml`
+- Unmatched corrected-identity rows → flag in validation output; **do not backfill** from QA tools
+- Presidents are a separate manual track — exclude from delegate pattern-join anchors
+
+# Data tiers (typical Republic layout)
+
+- **hot** — corrected identity (`republic_delegates_data`, `streamlit_worksheet` for QA only)
+- **warm** — resolution corpus, foundational raw patterns
+- **scratch** — all pipeline outputs
+
+# Sibling repos
+
+Reference via manifest keys only — no hardcoded paths to sibling project folders.

@@ -1,0 +1,10 @@
+name = "trifecta"
+title = "TRIFECTA frame annotation"
+description = "Structured LLM pipeline (Steps A→B→C) for historical food frame annotation"
+
+copy = [
+  "docs/addons/trifecta",
+  ".cursor/rules/trifecta-standards.mdc",
+]
+
+agents_append = "AGENTS.append.md"

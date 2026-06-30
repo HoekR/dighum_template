@@ -1,0 +1,23 @@
+# Merge into data_manifest.toml — example Republic RPP keys (edit paths for your machine)
+
+# [datasets.delegates_18thc_raw]
+# tier = "warm"
+# path = "gedelegeerden/delegates_18thc_raw.parquet"
+# phase = "frozen"
+# description = "Foundational 18th-c. occurrence patterns (sole pattern authority)"
+
+# [datasets.final_release_attendance]
+# tier = "hot"
+# path = "republic_delegates_data/release/final_release_20260630/attendance_1705_1795.json"
+# phase = "frozen"
+# description = "Corrected attendance identity (not pattern authority)"
+
+# [datasets.attendance_merged_18c]
+# tier = "scratch"
+# phase = "semi"
+# description = "Identity + raw pattern join output"
+
+# [datasets.pattern_validation_18c]
+# tier = "scratch"
+# phase = "semi"
+# description = "Join misses and QA flags"

@@ -1,0 +1,16 @@
+# Project figure style — copy to repo root as figure_style.toml
+# See docs/addons/paper-figures/README.md
+
+[preset]
+name = "paper"   # slide | paper | print
+
+[palette]
+name = "republic_provinces"
+
+[output]
+base = "figures"
+# subdir = "paper"   # default: same as preset name → figures/paper/
+
+# Optional: machine-local overrides (gitignore figure_style.local.toml)
+# [[extensions]]
+# path = "figure_style.local.toml"

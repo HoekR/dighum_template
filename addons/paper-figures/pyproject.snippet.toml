@@ -1,0 +1,9 @@
+# Optional dependencies when merging into pyproject.toml
+# matplotlib is often already present in DH pipeline projects
+
+# dependencies += ["matplotlib>=3.8"]
+# optional: seaborn for seaborn-v0_8-white style sheet used by paper/print presets
+
+[tool.setuptools.packages.find]
+# add "paper_figures" to include list, e.g.:
+# include = ["data_io", "llm_archivist", "paper_figures", "my_package"]

@@ -1,0 +1,29 @@
+# Default figure style for DH paper figures (override in project figure_style.toml)
+
+[preset]
+name = "paper"
+
+[palette]
+name = "republic_provinces"
+
+[output]
+base = "figures"
+# subdir defaults to preset name → figures/paper/
+
+# ── Example: override palette inline ─────────────────────────────────
+# [palette]
+# register_as = "my_project"
+# order = ["Gelderland", "Holland", "Zeeland"]
+# colors = { Gelderland = "#E69F00", Holland = "#56B4E9", Zeeland = "#009E73" }
+
+# ── Example: custom preset (extend rcparams) ─────────────────────────
+# [preset]
+# name = "paper"
+# fig_scale = 1.1
+# save_ext = "pdf"
+# [preset.rcparams]
+# "font.size" = 11
+
+# ── Example: load extra config fragments ─────────────────────────────
+# [[extensions]]
+# path = "figure_style.local.toml"

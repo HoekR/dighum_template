@@ -1,0 +1,14 @@
+name = "paper-figures"
+title = "Paper figure styling (matplotlib)"
+description = "Okabe-Ito province palette, slide/paper/print presets — from GNB_artikel/paper_figures.ipynb"
+
+copy = [
+  "paper_figures",
+  "figure_style.example.toml",
+  "docs/addons/paper-figures",
+  ".cursor/rules/paper-figures-standards.mdc",
+]
+
+agents_append = "AGENTS.append.md"
+
+pyproject_hint = "pyproject.snippet.toml"

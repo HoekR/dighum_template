@@ -1,0 +1,84 @@
+# dighum_template
+
+Template repository for bootstrapping **digital humanities data pipeline** projects with:
+
+- manifest-based data paths (`data_manifest.toml` + `data_io`)
+- provenance sidecars on all pipeline writes
+- legacy file inventory (`llm_archivist`)
+- Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`)
+- **`wisdom/`** — accumulated cross-project lessons (grows over time)
+- **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
+
+**This repo is not a pipeline itself** — it is the source you copy from when starting a new project.
+
+## Quick start (new project)
+
+**Prerequisite:** clone [llm-archivist](https://github.com/) as a sibling repo (`~/develop/llm-archivist`).
+
+```bash
+cd ~/develop/dighum_template
+./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project
+# optional layers:
+./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --addon rpp --with-wisdom
+```
+
+Full guide: **[docs/NEW_REPO.md](docs/NEW_REPO.md)**
+
+## Repository layout
+
+```
+dighum_template/
+├── docs/NEW_REPO.md          # how to start a new repo
+├── docs/SKELETON.md          # provenance model + LLM workflow
+├── wisdom/                   # accumulated wisdom (topics + journal)
+│   ├── INDEX.md
+│   └── topics/
+├── addons/                   # optional domain overlays (rpp, trifecta, paper-figures, …)
+│   ├── rpp/
+│   └── trifecta/
+├── scripts/
+│   ├── bootstrap.sh          # create a new project
+│   ├── apply_addon.sh        # add overlay to existing project
+│   ├── copy_wisdom.sh        # copy portable wisdom topics
+│   └── sync_data_io.sh       # refresh packages/data_io
+├── packages/data_io/
+├── template/                 # base files copied into each new project
+└── tests/test_data_io.py
+```
+
+## Wisdom and add-ons
+
+| Layer | Purpose | When |
+|-------|---------|------|
+| **`wisdom/topics/`** | Durable rules that transfer across repos | Read anytime; `--with-wisdom` at bootstrap |
+| **`wisdom/journal/`** | Dated discoveries and session notes | Append as you learn |
+| **`addons/<name>/`** | Domain-specific rules, docs, cursor rules | `--addon` at bootstrap or `apply_addon.sh` later |
+
+Catalog: [addons/README.md](addons/README.md) · Index: [wisdom/INDEX.md](wisdom/INDEX.md)
+
+## Maintaining the template
+
+`data_io` is developed in `republic_ner_matching`; refresh the vendored copy:
+
+```bash
+./scripts/sync_data_io.sh
+```
+
+After editing `template/`, `wisdom/`, or `addons/`, test:
+
+```bash
+TMP=$(mktemp -d)
+./scripts/bootstrap.sh "$TMP/test" test-project --addon rpp --with-wisdom
+```
+
+## Reference projects
+
+| Project | Notes |
+|---------|-------|
+| [gnb_analysis](../gnb_analysis) | RPP pipeline — use `--addon rpp` as starting point |
+| [trifecta-annotation](../trifecta-annotation) | TRIFECTA — use `--addon trifecta` |
+| [republic_ner_matching](../republic_ner_matching) | NER matching; `data_io` development source |
+
+## Deprecated path
+
+Bootstrap via `republic_ner_matching/scripts/bootstrap_dh_project.sh` forwards to this repo when present.

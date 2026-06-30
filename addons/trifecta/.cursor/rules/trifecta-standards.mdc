@@ -1,0 +1,22 @@
+---
+description: TRIFECTA structured LLM frame annotation pipeline
+alwaysApply: true
+---
+
+# TRIFECTA pipeline
+
+- Steps A → B → C; early dropout on Step A (not food / metaphor)
+- Structured outputs only (`instructor` + Pydantic) — no free-text frame labels in production
+- Era = provenance on records, not separate pipelines or code paths
+- Frame verbs are discovery triggers; gold labels frame in context
+
+# Scope
+
+- Keep TRIFECTA logic in this repo — do not add frame annotation code to `hist-text-utils`
+- Sibling corpora referenced via manifest keys only
+
+# Outputs
+
+- Semi-structured: `save_semi_structured(..., logical_name=..., script=__file__)`
+- Frozen eval sets: `save_parquet(..., logical_name=..., script=__file__)`
+- Preserve provenance (`record_id`, `corpus`, `date`, `source_path`) on annotation records

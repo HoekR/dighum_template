@@ -1,0 +1,18 @@
+# Copy this folder to addons/<name>/ and edit.
+
+name = "my-addon"
+title = "My specialized pipeline"
+description = "One-line summary for APPLIED.md and docs/addons/"
+
+# Paths relative to this add-on folder, copied into the project root.
+# Use rsync-style: directory copies merge; files overwrite.
+copy = [
+  "docs/addons/my-addon",
+  ".cursor/rules/my-addon-standards.mdc",
+]
+
+# Appended to project AGENTS.md (under ## Add-ons) if present.
+agents_append = "AGENTS.append.md"
+
+# Optional: shown in apply output — user merges into data_manifest.toml manually.
+# manifest_hint = "data_manifest.snippet.toml"

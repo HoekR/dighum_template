@@ -1,0 +1,14 @@
+---
+description: Matplotlib paper figure styling via paper_figures package
+globs: "**/*.{py,ipynb}"
+alwaysApply: false
+---
+
+# Paper figures
+
+- Use `from paper_figures import apply_style` — configure via `figure_style.toml`
+- Province colors: `style.color(province)` from Okabe-Ito `republic_provinces` palette (or project palette)
+- Figure sizes: `style.figsize(width, height)`; font scaling: `style.fontsize(n)`
+- Save with `style.save(fig, "stem")` — do not duplicate DPI/format logic
+- Presets: `slide` (dark PNG), `paper` (300 dpi JPG), `print` (PDF + hatches)
+- Extend via `register_palette()` / `register_preset()` or inline TOML — do not fork hex values into scripts

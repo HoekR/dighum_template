@@ -1,0 +1,12 @@
+name = "rpp"
+title = "Relative Proportional Presence (RPP)"
+description = "Republic delegate attendance RPP — pattern authority, tier layout, naming"
+
+copy = [
+  "docs/addons/rpp",
+  ".cursor/rules/rpp-standards.mdc",
+]
+
+agents_append = "AGENTS.append.md"
+
+manifest_hint = "data_manifest.snippet.toml"
