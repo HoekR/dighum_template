@@ -11,6 +11,7 @@
   "python.testing.pytestArgs": [
     "tests"
   ],
+  "jupyter.notebookFileRoot": "${workspaceFolder}/notebooks",
   "files.exclude": {
     "**/__pycache__": true,
     "**/.pytest_cache": true,

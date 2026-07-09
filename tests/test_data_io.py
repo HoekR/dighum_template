@@ -101,6 +101,11 @@ def test_save_semi_structured_sidecar(manifest_dir: Path) -> None:
     assert sidecar["logical_name"] == "sample_jsonl"
     assert sidecar["phase"] == "semi"
     assert sidecar["record_count"] == 1
+    provenance_json = path.with_suffix(".provenance.json")
+    assert provenance_json.exists()
+    loaded = json.loads(provenance_json.read_text(encoding="utf-8"))
+    assert loaded["logical_name"] == "sample_jsonl"
+    assert loaded["phase"] == "semi"
     assert load_jsonl(path) == records
 
 
@@ -120,6 +125,11 @@ def test_save_parquet_metadata_and_sidecar(manifest_dir: Path) -> None:
     sidecar = read_sidecar(path, phase="frozen")
     assert sidecar is not None
     assert sidecar["columns"] == ["a", "b"]
+    provenance_json = path.with_suffix(".provenance.json")
+    assert provenance_json.exists()
+    loaded = json.loads(provenance_json.read_text(encoding="utf-8"))
+    assert loaded["logical_name"] == "sample_parquet"
+    assert loaded["phase"] == "frozen"
 
     loaded = load_parquet(path=path, warn_missing_sidecar=False)
     assert len(loaded) == 2

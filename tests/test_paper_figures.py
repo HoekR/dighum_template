@@ -5,8 +5,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 ADDON = Path(__file__).resolve().parents[1] / "addons" / "paper-figures"
 sys.path.insert(0, str(ADDON))
+
+pytest.importorskip("matplotlib")
 
 from paper_figures import (  # noqa: E402
     apply_style,

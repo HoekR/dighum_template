@@ -4,7 +4,7 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 
 - manifest-based data paths (`data_manifest.toml` + `data_io`)
 - provenance sidecars on all pipeline writes
-- legacy file inventory (`llm_archivist`)
+- optional legacy file inventory (`llm_archivist` via `--with-archivist`)
 - Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`)
 - **`wisdom/`** — accumulated cross-project lessons (grows over time)
 - **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
@@ -13,13 +13,12 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 
 ## Quick start (new project)
 
-**Prerequisite:** clone [llm-archivist](https://github.com/) as a sibling repo (`~/develop/llm-archivist`).
-
 ```bash
 cd ~/develop/dighum_template
 ./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project
 # optional layers:
 ./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --addon rpp --with-wisdom
+./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --with-archivist   # needs llm-archivist sibling
 ```
 
 Full guide: **[docs/NEW_REPO.md](docs/NEW_REPO.md)**
@@ -43,6 +42,7 @@ dighum_template/
 │   └── sync_data_io.sh       # refresh packages/data_io
 ├── packages/data_io/
 ├── template/                 # base files copied into each new project
+│   └── README.md.template    # rendered → README.md at bootstrap
 └── tests/test_data_io.py
 ```
 

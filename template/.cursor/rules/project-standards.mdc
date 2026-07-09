@@ -24,7 +24,7 @@ alwaysApply: true
 - Use `from data_io import resolve, load, save_parquet, save_semi_structured` — no hardcoded absolute paths
 - Register datasets in `data_manifest.toml` before referencing them in code
 - Pipeline outputs → **scratch tier** unless promoted in the manifest
-- Use `archive-inventory` / `archive-scan` only for legacy orphan files — not `data_io` outputs
+- Use `archive-inventory` / `archive-scan` only for legacy orphan files — not `data_io` outputs (requires `--with-archivist` at bootstrap)
 
 # Code style
 

@@ -8,17 +8,40 @@ Decouple code from disk layout using `data_manifest.toml` and `data_io`.
 |------|----------------|
 | **hot** | Code repos, tiny local inputs |
 | **warm** | Canonical parsed datasets (parquet, annotation JSON) |
-| **scratch** | Ephemeral exports, semi-structured JSONL |
+| **scratch** | Ephemeral exports, semi-structured JSONL (external drive when available) |
 | **cold** | Raw archives (zip, XML dumps) |
 | **collab** | SurfDrive / Nextcloud shared data |
+
+**Scratch fallback:** when the scratch drive is unplugged, point the scratch tier at `./output` in `data_manifest.local.toml` (see `output/README.md`). Pipeline writes still go through `data_io` — not ad-hoc files in `notebooks/`.
+
+## Workspaces
+
+| Directory | Role |
+|-----------|------|
+| `notebooks/` | Ad-hoc `.ipynb` explore work (Jupyter default root) |
+| `output/` | Local scratch-tier root when overridden in `data_manifest.local.toml` |
 
 ## Day-zero checklist
 
 1. `cp data_manifest.toml.example data_manifest.toml` — fill tier roots for this machine.
-2. Optional: `data_manifest.local.toml` (gitignored) for laptop vs SURF paths.
-3. `uv run sync` or `uv pip install -e .`
-4. `uv run python -m data_io.check`
+2. Optional: `data_manifest.local.toml` (gitignored) — per-machine tier roots; use `[tiers.scratch] root = "./output"` when the external scratch drive is unavailable.
+3. `uv sync` (already run by bootstrap; re-run if you change dependencies)
+4. `uv run python -m data_io.check` — the data registry view (declared datasets + on-disk status)
 5. Add `[datasets.*]` entries before writing scripts that read/write data.
+
+## Data registry view
+
+`uv run python -m data_io.check` is the fastest way to answer “what datasets do I know about, and which of them are currently available on disk?” without doing broad filesystem searches.
+
+It lists:
+
+- each configured `tier` and whether its `mount_check` path exists
+- each `[datasets.<logical_name>]` entry from `data_manifest.toml`, including the resolved path and whether it currently exists
+
+Limits:
+
+- it only shows datasets that are declared in `data_manifest.toml`
+- it does not discover “extra” files that you forgot to register; for legacy/orphan files you use the `llm_archivist` workflow (`archive-inventory` / `archive-scan`) on `output/_inbox/`
 
 ## Three-phase pipeline
 
@@ -29,6 +52,14 @@ Decouple code from disk layout using `data_manifest.toml` and `data_io`.
 | frozen | parquet + `.meta.json` | `save_parquet(...)` |
 
 Promote to Parquet only after schema review.
+
+## Provenance sidecars
+
+`data_io` writes deterministic provenance sidecars for pipeline outputs:
+
+- Phase 1–2: `*.meta.toml`
+- Phase 3: `*.meta.json` (and embedded Parquet metadata)
+- Also: `*.provenance.json` (stable JSON provenance, for spec compatibility)
 
 ## API
 
@@ -62,17 +93,17 @@ save_semi_structured(
 )
 ```
 
-## Legacy files — `llm_archivist`
+## Legacy files — `llm_archivist` (optional)
 
-For files **not** created by `data_io` (inbox dumps, old exports):
+Bootstrap with `--with-archivist` to install `llm_archivist` and inbox helper scripts. For files **not** created by `data_io` (inbox dumps, old exports):
 
 ```bash
 # Fast — no Ollama (columns, coverage, row counts)
-uv run archive-inventory /path/to/scratch/_inbox
+uv run archive-inventory ./output/_inbox
 # → INVENTORY.md + inventory_report.toml at scan root
 
 # LLM — rich description (Ollama on localhost:11434)
-uv run archive-scan /path/to/scratch/_inbox --model qwen2.5-coder:latest
+uv run archive-scan ./output/_inbox --model qwen2.5-coder:latest
 ```
 
 **Do not** run on `data_io` outputs — they already have provenance sidecars.

@@ -4,8 +4,6 @@
 
 **Start here:** [NEW_REPO.md](NEW_REPO.md) — step-by-step guide for bootstrapping and customizing a new repo.
 
-**Prerequisite:** clone [llm-archivist](../../llm-archivist) as a sibling repo (`~/develop/llm-archivist`).
-
 ## Quick start
 
 ```bash
@@ -18,24 +16,23 @@ uv run python -m data_io.check
 git init && git add . && git commit -m "Bootstrap DH data manifest project"
 ```
 
-Override archivist source if needed:
+Optional legacy inventory (`llm_archivist`):
 
 ```bash
-LLM_ARCHIVIST_SRC=~/develop/llm-archivist/src/llm_archivist ./scripts/bootstrap.sh ...
+./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --with-archivist
+# requires llm-archivist sibling repo; override with LLM_ARCHIVIST_SRC=...
 ```
 
 ## What gets copied
 
 | Source | Destination in new repo |
 |--------|-------------------------|
-| `template/*` | AGENTS.md, PLAN.md, docs, pyproject.toml, `.cursorrules`, `.cursor/rules/`, `.vscode/`, `<package>.code-workspace`, scripts |
+| `template/*` (excl. `optional/`) | AGENTS.md, PLAN.md, docs, pyproject.toml, notebooks/, output/, editor profile |
 | `packages/data_io/` | `data_io/` |
-| `../llm-archivist/src/llm_archivist/` | `llm_archivist/` |
+| `template/optional/archivist/` + `llm-archivist` | `llm_archivist/`, inbox scripts (only with `--with-archivist`) |
 | `tests/test_data_io.py` | `tests/` |
-| `../llm-archivist/tests/test_scanners.py` | `tests/test_llm_archivist.py` |
-| `../llm-archivist/tests/test_inventory.py` | `tests/test_inventory.py` |
 
-Both packages are copied at bootstrap time so each project is self-contained (SURF, offline).
+`data_io` is always copied so each project is self-contained (SURF, offline). `llm_archivist` is opt-in — most new pipelines only need `data_io`.
 
 ## Two-tool provenance model
 
@@ -57,7 +54,7 @@ flowchart LR
 | Tool | When | LLM? |
 |------|------|------|
 | **`data_io`** | All new writes | No — deterministic provenance |
-| **`llm_archivist`** | Orphan files in `_inbox/`, migrated legacy | Optional — `archive-inventory` (fast) or `archive-scan` (LLM) |
+| **`llm_archivist`** | Orphan files in `output/_inbox/`, migrated legacy | Optional — `archive-inventory` (fast) or `archive-scan` (LLM) |
 
 ## LLM coding workflow
 
@@ -71,6 +68,7 @@ flowchart LR
 Optional layers (see [addons/README.md](../addons/README.md), [wisdom/INDEX.md](../wisdom/INDEX.md)):
 
 - **`--with-wisdom`** — portable topics → `docs/wisdom/`
+- **`--with-archivist`** — legacy file inventory package
 - **`--addon <name>`** — domain overlay (`rpp`, `trifecta`, …)
 
 ### Prompt pattern
@@ -85,7 +83,7 @@ Run uv run python -m data_io.check when done.
 ### Document an inbox folder
 
 ```
-Run archive-inventory on scratch/_inbox (no Ollama).
+Run archive-inventory on output/_inbox (no Ollama).
 Read INVENTORY.md at the scan root; register canonical files in data_manifest.toml.
 Optional: archive-scan for LLM-rich sidecars.
 ```
@@ -101,6 +99,7 @@ uv run pytest tests/ -q
 
 ```bash
 rsync -a ~/develop/dighum_template/packages/data_io/ ~/develop/MyNewProject/data_io/
+# if archivist installed:
 rsync -a ~/develop/llm-archivist/src/llm_archivist/ ~/develop/MyNewProject/llm_archivist/
 ```
 

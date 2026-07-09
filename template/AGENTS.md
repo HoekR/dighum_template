@@ -20,9 +20,9 @@ Read this file, `docs/DATA.md`, and `PLAN.md` before writing pipeline code.
 - Phase 3 (frozen): `save_parquet(df, logical_name="...", script=__file__)`
 - Never write pipeline outputs without sidecar provenance (`data_io` does this automatically).
 
-## Legacy / orphan files — `llm_archivist`
+## Legacy / orphan files — `llm_archivist` (optional)
 
-For **existing** files without `data_io` sidecars (inbox dumps, old exports):
+Available when the project was bootstrapped with `--with-archivist` (or `llm_archivist/` was added manually). For **existing** files without `data_io` sidecars (inbox dumps, old exports):
 
 ```bash
 # Fast — no Ollama (columns, coverage, row counts)
@@ -33,7 +33,7 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 ```
 
 - Profiles `.parquet`, `.csv`, `.xlsx`, `.ipynb` → `filename.meta.toml`
-- Use on `scratch/_inbox/` or migrated legacy data — **not** on `data_io` outputs
+- Use on `output/_inbox/` or migrated legacy data — **not** on `data_io` outputs
 - After inventory, read **`INVENTORY.md`** at the scan root; add canonical files to `data_manifest.toml`
 
 | Tool | When | Sidecar | LLM? |
@@ -58,7 +58,8 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 
 1. Read `PLAN.md` for current phase and outputs.
 2. Update `PLAN.md` data-path table when manifest datasets change.
-3. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
+3. (Recommended) Run `uv run python -m data_io.check` to view the manifest-backed data registry state before you start new work.
+4. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
 
 ## Common mistakes (avoid)
 
