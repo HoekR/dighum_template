@@ -16,6 +16,7 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | [archivist-vs-data-io](topics/archivist-vs-data-io.md) | When to use `data_io` vs `archive-scan` |
 | [paper-figure-style](topics/paper-figure-style.md) | Use `paper-figures` add-on for matplotlib |
 | [observable-framework-bridge](topics/observable-framework-bridge.md) | Deferred plan: Observable Framework dashboard + MCP wired via `bridge.toml` |
+| [data-io-mcp](topics/data-io-mcp.md) | Cursor MCP for manifest registry, previews, provenance |
 
 ## Journal (recent)
 
@@ -27,6 +28,6 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 
 | Type | Read first |
 |------|------------|
-| Any new DH repo | manifest-discipline, provenance-fields, archivist-vs-data-io |
+| Any new DH repo | manifest-discipline, provenance-fields, archivist-vs-data-io, data-io-mcp |
 | Republic attendance / RPP | pattern-authority, pandas-pre-1678-dates, observable-framework-bridge |
 | LLM annotation | vectorized-pandas + addon `trifecta` |

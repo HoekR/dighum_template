@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-io-mcp"
+version = "0.1.0"
+description = "MCP server exposing data_io manifest registry, provenance, and dataset previews"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.0",
+    "pandas>=3.0",
+    "pyarrow>=24.0",
+    "tomli-w>=1.0",
+]
+
+[project.scripts]
+data-io-mcp = "data_io_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["data_io_mcp*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["..", "."]

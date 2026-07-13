@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "data-io": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/rikhoekstra/develop/dighum_template/packages/data_io_mcp",
+        "data-io-mcp",
+        "--project-root",
+        "${workspaceFolder}"
+      ]
+    }
+  }
+}

@@ -6,6 +6,8 @@ Step-by-step guide for bootstrapping a historical-data pipeline project with man
 
 Optional: clone [llm-archivist](../../llm-archivist) only if you need legacy file inventory (`--with-archivist`).
 
+For **search/browse webapps** (e.g. RAA), use sibling [`dighum_web_template`](../../dighum_web_template) and see [PLAN-raa-modernized.md](PLAN-raa-modernized.md).
+
 ---
 
 ## 1. Bootstrap the repo

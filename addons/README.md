@@ -9,6 +9,7 @@ Optional **specialized overlays** copied on top of the base template — domain 
 | **`rpp`** | Relative Proportional Presence (Republic delegate attendance) | `--addon rpp` |
 | **`paper-figures`** | Matplotlib slide/paper/print styles (GNB article palette) | `--addon paper-figures` |
 | **`trifecta`** | TRIFECTA structured LLM frame annotation | `--addon trifecta` |
+| **`data-io-mcp`** | Cursor MCP for `data_io` manifest registry + previews | `apply_addon.sh` |
 | **`_template`** | Scaffold for authoring a new add-on | (maintainers only) |
 
 List installed add-ons in the target project: `docs/addons/APPLIED.md` (created on apply).

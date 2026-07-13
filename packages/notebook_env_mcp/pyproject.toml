@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "notebook-env-mcp"
+version = "0.1.0"
+description = "MCP server to discover project venvs and match Jupyter notebook kernels"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.0",
+]
+
+[project.scripts]
+notebook-env-mcp = "notebook_env_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["notebook_env_mcp*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

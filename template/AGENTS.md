@@ -61,6 +61,10 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 3. (Recommended) Run `uv run python -m data_io.check` to view the manifest-backed data registry state before you start new work.
 4. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
 
+## Optional: data_io MCP (Cursor)
+
+When the `data-io-mcp` add-on is applied, prefer MCP tools (`check_manifest`, `list_datasets`, `preview_dataset`) over raw filesystem reads. See `docs/addons/data-io-mcp/README.md`.
+
 ## Common mistakes (avoid)
 
 | Wrong | Right |

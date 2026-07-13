@@ -1,0 +1,10 @@
+name = "data-io-mcp"
+title = "data_io MCP server"
+description = "Cursor MCP tools for manifest registry, previews, and provenance"
+
+copy = [
+  "docs/addons/data-io-mcp",
+  ".cursor/mcp.json.example",
+]
+
+agents_append = "AGENTS.append.md"
