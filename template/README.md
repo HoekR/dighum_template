@@ -18,13 +18,14 @@ Open the workspace profile in Cursor or VS Code:
 
 ```bash
 cursor PROJECT_NAME.code-workspace
+# or: code PROJECT_NAME.code-workspace
 ```
 
 ## Layout
 
 | Path | Role |
 |------|------|
-| `AGENTS.md` | Agent instructions — read before pipeline work |
+| `AGENTS.md` | Agent instructions (Cursor and VS Code Copilot) |
 | `PLAN.md` | Milestones and dataset table |
 | `docs/DATA.md` | Tiers, phases, manifest workflow |
 | `data_manifest.toml` | Tier roots and registered datasets |
@@ -32,6 +33,9 @@ cursor PROJECT_NAME.code-workspace
 | `output/` | Local scratch-tier fallback (gitignored; see `output/README.md`) |
 | `data_io/` | Manifest I/O and provenance helpers |
 
-## Cursor / agents
+## Agents (Cursor / VS Code)
 
-Read **`AGENTS.md`** first. Rules also load from `.cursor/rules/project-standards.mdc` and `.cursorrules`.
+Read **`AGENTS.md`** first. The same standards load from:
+
+- Cursor: `.cursor/rules/project-standards.mdc`
+- VS Code Copilot: `.github/copilot-instructions.md`

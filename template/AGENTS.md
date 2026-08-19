@@ -61,6 +61,17 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 3. (Recommended) Run `uv run python -m data_io.check` to view the manifest-backed data registry state before you start new work.
 4. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
 
+## Editors (Cursor and VS Code)
+
+This file is the **canonical** agent brief. The same non-negotiables are copied into:
+
+| Editor | File |
+|--------|------|
+| Cursor | `.cursor/rules/project-standards.mdc` (`alwaysApply`) |
+| VS Code Copilot | `.github/copilot-instructions.md` |
+
+Do not edit those two generated files by hand in a bootstrapped repo unless you keep both in sync. Domain extras go here (and in add-on `.cursor/rules/` + the `## Add-ons` section below).
+
 ## Optional: data_io MCP (Cursor)
 
 When the `data-io-mcp` add-on is applied, prefer MCP tools (`check_manifest`, `list_datasets`, `preview_dataset`) over raw filesystem reads. See `docs/addons/data-io-mcp/README.md`.
@@ -77,5 +88,5 @@ When the `data-io-mcp` add-on is applied, prefer MCP tools (`check_manifest`, `l
 ## Wisdom and add-ons
 
 - **Wisdom** (cross-project lessons): `docs/wisdom/` if bootstrapped with `--with-wisdom`, else `~/develop/dighum_template/wisdom/INDEX.md`
-- **Add-ons** (domain overlays): see `docs/addons/APPLIED.md` and `.cursor/rules/*` beyond `project-standards.mdc`
+- **Add-ons** (domain overlays): see `docs/addons/APPLIED.md` and extra `.cursor/rules/*` (Cursor) plus this file’s `## Add-ons` section (both editors)
 - Apply later: `~/develop/dighum_template/scripts/apply_addon.sh <this-repo> <name>`

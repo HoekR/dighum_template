@@ -2,7 +2,8 @@
   "recommendations": [
     "ms-python.python",
     "ms-python.vscode-pylance",
-    "ms-toolsai.jupyter"
+    "ms-toolsai.jupyter",
+    "github.copilot"
   ],
   "unwantedRecommendations": []
 }

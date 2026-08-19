@@ -37,7 +37,7 @@ addons/rpp/
 ├── addon.toml              # metadata (name, title, copy globs)
 ├── README.md               # human description (this add-on's docs)
 ├── AGENTS.append.md        # appended to project AGENTS.md
-├── .cursor/rules/          # optional extra cursor rules
+├── .cursor/rules/          # extra Cursor rules (also summarized in AGENTS.md for VS Code)
 └── docs/addons/rpp/        # optional domain docs copied into project
 ```
 

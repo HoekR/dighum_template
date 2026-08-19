@@ -5,7 +5,7 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 - manifest-based data paths (`data_manifest.toml` + `data_io`)
 - provenance sidecars on all pipeline writes
 - optional legacy file inventory (`llm_archivist` via `--with-archivist`)
-- Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`)
+- Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`, `.github/copilot-instructions.md`)
 - **`wisdom/`** — accumulated cross-project lessons (grows over time)
 - **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
 
@@ -39,10 +39,12 @@ dighum_template/
 │   ├── bootstrap.sh          # create a new project
 │   ├── apply_addon.sh        # add overlay to existing project
 │   ├── copy_wisdom.sh        # copy portable wisdom topics
+│   ├── sync_editor_rules.sh  # Cursor + Copilot rules from shared source
 │   └── sync_data_io.sh       # refresh packages/data_io
 ├── packages/data_io/
 ├── template/                 # base files copied into each new project
-│   └── README.md.template    # rendered → README.md at bootstrap
+│   ├── README.md             # PROJECT_NAME substituted at bootstrap
+│   └── shared/               # not copied; source for editor rules
 └── tests/test_data_io.py
 ```
 
@@ -69,6 +71,9 @@ After editing `template/`, `wisdom/`, or `addons/`, test:
 ```bash
 TMP=$(mktemp -d)
 ./scripts/bootstrap.sh "$TMP/test" test-project --addon rpp --with-wisdom
+test ! -e "$TMP/test/README.md.template"
+test ! -e "$TMP/test/shared"
+test -f "$TMP/test/.github/copilot-instructions.md"
 ```
 
 ## Reference projects

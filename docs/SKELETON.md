@@ -27,7 +27,7 @@ Optional legacy inventory (`llm_archivist`):
 
 | Source | Destination in new repo |
 |--------|-------------------------|
-| `template/*` (excl. `optional/`) | AGENTS.md, PLAN.md, docs, pyproject.toml, notebooks/, output/, editor profile |
+| `template/*` (excl. `optional/`, `shared/`, `.venv/`) | AGENTS.md, PLAN.md, README.md, docs, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 | `packages/data_io/` | `data_io/` |
 | `template/optional/archivist/` + `llm-archivist` | `llm_archivist/`, inbox scripts (only with `--with-archivist`) |
 | `tests/test_data_io.py` | `tests/` |
@@ -58,12 +58,13 @@ flowchart LR
 
 ## LLM coding workflow
 
-1. **`AGENTS.md`** — path rules, `data_io` writes, when to `archive-scan`
-2. **`.cursor/rules/project-standards.mdc`** — uv, manifest, pandas conventions (always apply)
-3. **`.cursorrules`** — short manifest discipline (legacy auto-load)
+1. **`AGENTS.md`** — path rules, `data_io` writes, when to `archive-scan` (canonical for Cursor **and** VS Code Copilot)
+2. **`.cursor/rules/project-standards.mdc`** — always-apply Cursor rules (same body as Copilot instructions)
+3. **`.github/copilot-instructions.md`** — VS Code Copilot (same body; do not maintain separately)
 4. **`docs/DATA.md`** — tiers, phases, both tools
 5. **`PLAN.md`** — status + data-path table
-6. **`<package>.code-workspace`** — editor profile (interpreter, lint, test, excludes)
+6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
+7. **`<package>.code-workspace`** — folder + extension recommendations only
 
 Optional layers (see [addons/README.md](../addons/README.md), [wisdom/INDEX.md](../wisdom/INDEX.md)):
 
