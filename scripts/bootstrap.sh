@@ -80,14 +80,20 @@ echo "Copying template → $TARGET"
 rsync -a \
   --exclude 'optional/' \
   --exclude 'pyproject.with-archivist.toml' \
-  --exclude 'README.md.template' \
+  --exclude 'shared/' \
+  --exclude '.venv/' \
+  --exclude '.uvcache/' \
+  --exclude '__pycache__/' \
+  --exclude '.pytest_cache/' \
+  --exclude '*.egg-info/' \
   "$REPO_ROOT/template/" "$TARGET/"
 
 if [[ "$WITH_ARCHIVIST" == true ]]; then
   cp "$REPO_ROOT/template/pyproject.with-archivist.toml" "$TARGET/pyproject.toml"
 fi
 
-sed "s/PROJECT_NAME/$PKG_NAME/g" "$REPO_ROOT/template/README.md.template" > "$TARGET/README.md"
+sed "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/README.md" > "$TARGET/README.md.tmp"
+mv "$TARGET/README.md.tmp" "$TARGET/README.md"
 
 echo "Copying data_io package"
 rsync -a "$REPO_ROOT/packages/data_io/" "$TARGET/data_io/"
@@ -124,6 +130,8 @@ WORKSPACE_FILE="$TARGET/$PKG_NAME.code-workspace"
 if [[ -f "$WORKSPACE_TEMPLATE" ]]; then
   mv "$WORKSPACE_TEMPLATE" "$WORKSPACE_FILE"
 fi
+
+"$REPO_ROOT/scripts/sync_editor_rules.sh" "$TARGET"
 
 chmod +x "$TARGET/scripts"/*.sh 2>/dev/null || true
 
@@ -186,7 +194,7 @@ Optional later:
   $REPO_ROOT/scripts/apply_addon.sh $TARGET <name>
   $REPO_ROOT/scripts/copy_wisdom.sh $TARGET
 
-For LLM coding: read AGENTS.md, PLAN.md, and .cursor/rules/project-standards.mdc
+For LLM coding: read AGENTS.md, PLAN.md, .cursor/rules/, and .github/copilot-instructions.md
 Wisdom index: $REPO_ROOT/wisdom/INDEX.md
 Add-ons catalog: $REPO_ROOT/addons/README.md
 Full guide: $REPO_ROOT/docs/NEW_REPO.md

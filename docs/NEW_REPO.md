@@ -60,7 +60,7 @@ LLM_ARCHIVIST_SRC=~/develop/llm-archivist/src/llm_archivist \
 
 | Layer | Files |
 |-------|-------|
-| **Agent workflow** | `AGENTS.md`, `PLAN.md`, `.cursorrules`, `.cursor/rules/project-standards.mdc` |
+| **Agent workflow** | `AGENTS.md`, `PLAN.md`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 | **Editor profile** | `.vscode/settings.json`, `.vscode/extensions.json`, `<package-name>.code-workspace` |
 | **Data governance** | `data_manifest.toml`, `data_io/`, `docs/DATA.md` |
 | **Workspaces** | `notebooks/` (Jupyter), `output/` (local scratch fallback, gitignored) |
@@ -117,10 +117,10 @@ Keep the **generic** template rules; add project-specific guidance in these file
 
 | File | Customize |
 |------|-----------|
-| `AGENTS.md` | Domain docs to read, sibling repos, naming conventions |
+| `AGENTS.md` | Domain docs, sibling repos, naming — **canonical** agent brief for both editors |
 | `PLAN.md` | Milestones, dataset table, current phase |
 | `docs/DATA.md` | Tier layout, canonical sources, phase policy |
-| `.cursor/rules/project-standards.mdc` | Domain pipeline rules (append or replace generic sections) |
+| `.cursor/rules/` / `.github/copilot-instructions.md` | Keep generic (regenerate from `template/shared/agent-standards.md`) |
 | `data_manifest.toml` | All datasets your pipeline reads/writes |
 
 Optional: add domain docs under `docs/` (e.g. `DATA_LINEAGE.md`, `CALCULATIONS_INDEX.md`).

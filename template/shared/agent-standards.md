@@ -1,8 +1,3 @@
----
-description: Core project standards for DH data projects (shared with VS Code Copilot)
-alwaysApply: true
----
-
 # Agent standards (Cursor + VS Code Copilot)
 
 Read `AGENTS.md`, `docs/DATA.md`, and `PLAN.md` before pipeline work.
