@@ -2,6 +2,19 @@
 
 Cursor MCP tools wrapping `data_io` — manifest registry, capped previews, provenance chains.
 
+## Optional dependency: dighum_template
+
+MCP server code is **not** copied into derivative projects — intentionally, to avoid replicating identical tooling.
+
+| Layer | Location |
+|-------|----------|
+| MCP server | Sibling clone of [dighum_template](https://github.com/HoekR/dighum_template) → `packages/data_io_mcp/` |
+| Your project | Vendored `data_io/` + manifest at bootstrap; add-on adds `.cursor/mcp.json`, docs, `AGENTS.md` snippet |
+
+Clone dighum_template once (any path), run `uv sync` in the package directory, and point `.cursor/mcp.json` at it.
+
+**Optional:** skip this add-on if you do not use Cursor MCP; use `uv run python -m data_io.check` and file reads instead.
+
 ## Setup
 
 1. Ensure this project has `data_io/` and `data_manifest.toml` (from dighum_template bootstrap).

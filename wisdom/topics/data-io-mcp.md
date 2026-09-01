@@ -19,6 +19,10 @@ Use the **data_io MCP** in Cursor for manifest discovery and capped previews —
 | `get_provenance(name)` | Sidecar + parent chain |
 | `suggest_manifest_entry(...)` | Draft TOML for human commit |
 
+## Optional dependency: dighum_template
+
+Derivatives reference — not vendor — the server in [dighum_template](https://github.com/HoekR/dighum_template) `packages/data_io_mcp/`. Clone once as a sibling; add-on overlay copies only `.cursor/mcp.json` stub and docs. Vendored `data_io/` in the project is runtime code (separate concern). Optional: skip if you do not use Cursor MCP.
+
 ## Setup
 
 1. `cd ~/develop/dighum_template/packages/data_io_mcp && uv sync`

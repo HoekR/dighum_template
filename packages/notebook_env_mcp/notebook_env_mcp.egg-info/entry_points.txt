@@ -1,0 +1,2 @@
+[console_scripts]
+notebook-env-mcp = notebook_env_mcp.server:main

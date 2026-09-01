@@ -1,0 +1,10 @@
+name = "workflow-mcp"
+title = "workflow MCP server"
+description = "Cursor MCP tools for PLAN.md progress and docs/steps guides"
+
+copy = [
+  "docs/addons/workflow-mcp",
+  ".cursor/mcp.json.example",
+]
+
+agents_append = "AGENTS.append.md"

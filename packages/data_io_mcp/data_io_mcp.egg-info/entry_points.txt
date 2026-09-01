@@ -1,0 +1,2 @@
+[console_scripts]
+data-io-mcp = data_io_mcp.server:main

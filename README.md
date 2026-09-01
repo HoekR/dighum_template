@@ -5,6 +5,7 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 - manifest-based data paths (`data_manifest.toml` + `data_io`)
 - provenance sidecars on all pipeline writes
 - optional legacy file inventory (`llm_archivist` via `--with-archivist`)
+- Living Project State (`docs/state.json`, `docs/STATE.md`, `docs/DECISIONS.md`, dashboard notebooks, `scripts/svz.py`)
 - Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`, `.github/copilot-instructions.md`)
 - **`wisdom/`** — accumulated cross-project lessons (grows over time)
 - **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
@@ -37,13 +38,17 @@ dighum_template/
 │   └── trifecta/
 ├── scripts/
 │   ├── bootstrap.sh          # create a new project
+│   ├── sync_project.sh       # sync updates into existing derivative
+│   ├── update_project.sh     # add/update Living Project State in a derivative
 │   ├── apply_addon.sh        # add overlay to existing project
 │   ├── copy_wisdom.sh        # copy portable wisdom topics
 │   ├── sync_editor_rules.sh  # Cursor + Copilot rules from shared source
-│   └── sync_data_io.sh       # refresh packages/data_io
+│   └── sync_data_io.sh       # refresh packages/data_io (maintainers)
 ├── packages/data_io/
 ├── template/                 # base files copied into each new project
 │   ├── README.md             # PROJECT_NAME substituted at bootstrap
+│   ├── 00_project_dashboard.ipynb
+│   ├── tasks/                # reusable task overview notebooks
 │   └── shared/               # not copied; source for editor rules
 └── tests/test_data_io.py
 ```
@@ -55,6 +60,7 @@ dighum_template/
 | **`wisdom/topics/`** | Durable rules that transfer across repos | Read anytime; `--with-wisdom` at bootstrap |
 | **`wisdom/journal/`** | Dated discoveries and session notes | Append as you learn |
 | **`addons/<name>/`** | Domain-specific rules, docs, cursor rules | `--addon` at bootstrap or `apply_addon.sh` later |
+| **`scripts/sync_project.sh`** | Push template updates into existing derivatives | After dighum changes — [docs/SYNC-PROJECT.md](docs/SYNC-PROJECT.md) |
 
 Catalog: [addons/README.md](addons/README.md) · Index: [wisdom/INDEX.md](wisdom/INDEX.md)
 
@@ -64,6 +70,13 @@ Catalog: [addons/README.md](addons/README.md) · Index: [wisdom/INDEX.md](wisdom
 
 ```bash
 ./scripts/sync_data_io.sh
+```
+
+**Push updates into derivative projects:** [docs/SYNC-PROJECT.md](docs/SYNC-PROJECT.md)
+
+```bash
+./scripts/sync_project.sh ~/develop/my-project --all
+./scripts/update_project.sh ~/develop/my-project --dry-run
 ```
 
 After editing `template/`, `wisdom/`, or `addons/`, test:

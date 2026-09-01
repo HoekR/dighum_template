@@ -4,6 +4,10 @@
 
 <!-- One paragraph: what this project produces -->
 
+For multi-step pipelines (Bayesian, publication, migration), split detailed guides into
+`docs/steps/STEP*.md` and keep this file as a checklist. See dighum_template wisdom:
+[cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md).
+
 ## Data paths
 
 Logical names live in [`data_manifest.toml`](data_manifest.toml). Verify with `uv run python -m data_io.check`.

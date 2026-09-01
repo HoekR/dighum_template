@@ -66,6 +66,32 @@ flowchart LR
 6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
 7. **`<package>.code-workspace`** — folder + extension recommendations only
 
+## Living project state
+
+Each bootstrapped project includes a compact status system for humans and AI agents:
+
+| File | Purpose |
+|------|---------|
+| `docs/state.json` | Machine-readable source of truth for task status, focus, metrics, blockers, and next actions |
+| `docs/STATE.md` | Rendered dashboard with a Mermaid overview and short state summary |
+| `docs/DECISIONS.md` | Durable decision log for methodological and architectural choices |
+| `00_project_dashboard.ipynb` | Lightweight visual dashboard for status and result inspection |
+| `tasks/_template_task/00_task_overview.ipynb` | Copyable per-task overview notebook |
+
+Use the SvZ CLI from the project root:
+
+```bash
+uv run python scripts/svz.py status
+uv run python scripts/svz.py update S1 inprogress --title "Diagnostics"
+uv run python scripts/svz.py metric S1 containment_mean 0.295 --label "Mean entity containment"
+uv run python scripts/svz.py decision "Boundary tolerance" --context "..." --decision "..." --reason "..."
+uv run python scripts/svz.py render
+uv run python scripts/svz.py doctor
+```
+
+Keep heavy processing in reproducible scripts. Let notebooks read outputs and render tables/plots;
+let `docs/state.json` and `docs/STATE.md` carry only the short current state needed to restart work.
+
 Optional layers (see [addons/README.md](../addons/README.md), [wisdom/INDEX.md](../wisdom/INDEX.md)):
 
 - **`--with-wisdom`** — portable topics → `docs/wisdom/`
@@ -98,10 +124,28 @@ uv run pytest tests/ -q
 
 ## Syncing updates
 
+Use **`sync_project.sh`** from dighum_template — see [SYNC-PROJECT.md](SYNC-PROJECT.md).
+
 ```bash
-rsync -a ~/develop/dighum_template/packages/data_io/ ~/develop/MyNewProject/data_io/
-# if archivist installed:
+cd ~/develop/dighum_template
+./scripts/sync_project.sh ~/develop/MyNewProject --dry-run --all
+./scripts/sync_project.sh ~/develop/MyNewProject --all
+```
+
+Or sync pieces only:
+
+```bash
+./scripts/sync_project.sh ~/develop/MyNewProject --data-io --wisdom
+./scripts/sync_project.sh ~/develop/MyNewProject --state
+# archivist (manual for now):
 rsync -a ~/develop/llm-archivist/src/llm_archivist/ ~/develop/MyNewProject/llm_archivist/
+```
+
+For the state feature only, the convenience wrapper is equivalent to `sync_project.sh --state --editor-rules`:
+
+```bash
+./scripts/update_project.sh ~/develop/MyExistingProject --dry-run
+./scripts/update_project.sh ~/develop/MyExistingProject
 ```
 
 ## Maintaining dighum_template

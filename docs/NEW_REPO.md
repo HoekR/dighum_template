@@ -168,25 +168,34 @@ Ensure large data, `.venv/`, `output/`, and `data_manifest.local.toml` stay out 
 
 ## 7. Sync updates from the template
 
-When `data_io` changes upstream:
+Bootstrap runs once. For existing projects, use **`sync_project.sh`** — full guide: **[SYNC-PROJECT.md](SYNC-PROJECT.md)**.
 
 ```bash
-# From dighum_template maintainers — refresh vendored data_io first:
-cd ~/develop/dighum_template && ./scripts/sync_data_io.sh
+cd ~/develop/dighum_template
 
-# Into your project:
-rsync -a ~/develop/dighum_template/packages/data_io/ ~/develop/MyNewProject/data_io/
+# Preview:
+./scripts/sync_project.sh ~/develop/MyNewProject --dry-run --all
+
+# Apply safe updates (data_io, wisdom, editor rules, applied add-ons, MCP deps):
+./scripts/sync_project.sh ~/develop/MyNewProject --all
 ```
 
-With archivist installed, also sync:
+Then in the project: `uv run python -m data_io.check` and `uv run pytest tests/ -q`.
+
+**Maintainers:** refresh dighum's vendored `data_io` first when upstream changes:
+
+```bash
+cd ~/develop/dighum_template && ./scripts/sync_data_io.sh
+./scripts/sync_project.sh ~/develop/MyNewProject --data-io
+```
+
+**Manual merge** still required for `AGENTS.md` (base), `pyproject.toml`, `data_manifest.toml`, `PLAN.md`, and domain code. MCP server packages stay in dighum_template (optional sibling) — `--mcp` only runs `uv sync` there.
+
+With archivist installed, sync `llm_archivist/` manually:
 
 ```bash
 rsync -a ~/develop/llm-archivist/src/llm_archivist/ ~/develop/MyNewProject/llm_archivist/
 ```
-
-Re-run `uv run python -m data_io.check` and tests after syncing.
-
-To pick up template file changes (AGENTS.md, `.cursor/rules/`, etc.), compare `dighum_template/template/` with your repo and merge manually — bootstrap only runs on empty directories.
 
 ---
 

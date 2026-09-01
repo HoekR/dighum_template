@@ -10,9 +10,16 @@ Optional **specialized overlays** copied on top of the base template — domain 
 | **`paper-figures`** | Matplotlib slide/paper/print styles (GNB article palette) | `--addon paper-figures` |
 | **`trifecta`** | TRIFECTA structured LLM frame annotation | `--addon trifecta` |
 | **`data-io-mcp`** | Cursor MCP for `data_io` manifest registry + previews | `apply_addon.sh` |
+| **`workflow-mcp`** | Cursor MCP for `PLAN.md` progress + `docs/steps/` guides | `apply_addon.sh` |
 | **`_template`** | Scaffold for authoring a new add-on | (maintainers only) |
 
 List installed add-ons in the target project: `docs/addons/APPLIED.md` (created on apply).
+
+## MCP add-ons and dighum_template
+
+**`data-io-mcp`** and **`workflow-mcp`** do not copy server code into derivatives. They require an optional sibling clone of [dighum_template](https://github.com/HoekR/dighum_template) (`packages/data_io_mcp/`, `packages/workflow_mcp/`). The add-on overlay copies only `.cursor/mcp.json` stub, docs, and an `AGENTS.md` snippet — no replication of shared tooling. Pipeline runtime (`data_io/`, etc.) is still vendored at bootstrap. Skip MCP add-ons if you do not use Cursor MCP.
+
+**Refresh add-on docs** after dighum changes: `./scripts/sync_project.sh <project> --addons` or `--addon workflow-mcp` — see [docs/SYNC-PROJECT.md](../docs/SYNC-PROJECT.md).
 
 ## At bootstrap
 

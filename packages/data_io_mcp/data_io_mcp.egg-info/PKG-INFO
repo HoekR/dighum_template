@@ -1,3 +1,14 @@
+Metadata-Version: 2.4
+Name: data-io-mcp
+Version: 0.1.0
+Summary: MCP server exposing data_io manifest registry, provenance, and dataset previews
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: fastmcp>=2.0
+Requires-Dist: pandas>=3.0
+Requires-Dist: pyarrow>=24.0
+Requires-Dist: tomli-w>=1.0
+
 # data_io MCP server
 
 FastMCP server exposing manifest-backed dataset registry to Cursor agents.

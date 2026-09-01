@@ -120,9 +120,13 @@ cp "$TARGET/data_manifest.toml.example" "$TARGET/data_manifest.toml"
 if [[ "$(uname)" == "Darwin" ]]; then
   sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/pyproject.toml"
   sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/data_manifest.toml"
+  find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
+    -exec sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" {} +
 else
   sed -i "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/pyproject.toml"
   sed -i "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/data_manifest.toml"
+  find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
+    -exec sed -i "s/PROJECT_NAME/$PKG_NAME/g" {} +
 fi
 
 WORKSPACE_TEMPLATE="$TARGET/PROJECT_NAME.code-workspace"
@@ -134,6 +138,7 @@ fi
 "$REPO_ROOT/scripts/sync_editor_rules.sh" "$TARGET"
 
 chmod +x "$TARGET/scripts"/*.sh 2>/dev/null || true
+chmod +x "$TARGET/scripts/svz.py" 2>/dev/null || true
 
 if [[ "$WITH_WISDOM" == true ]]; then
   echo "Copying portable wisdom → $TARGET/docs/wisdom/"
@@ -193,6 +198,7 @@ Scratch fallback:   output/ (via data_manifest.local.toml when drive unplugged)
 Optional later:
   $REPO_ROOT/scripts/apply_addon.sh $TARGET <name>
   $REPO_ROOT/scripts/copy_wisdom.sh $TARGET
+  $REPO_ROOT/scripts/sync_project.sh $TARGET --all   # after dighum updates
 
 For LLM coding: read AGENTS.md, PLAN.md, .cursor/rules/, and .github/copilot-instructions.md
 Wisdom index: $REPO_ROOT/wisdom/INDEX.md

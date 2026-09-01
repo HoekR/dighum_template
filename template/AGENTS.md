@@ -57,7 +57,8 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 ## Session workflow
 
 1. Read `PLAN.md` for current phase and outputs.
-2. Update `PLAN.md` data-path table when manifest datasets change.
+2. Multi-step projects: use `docs/steps/STEP*.md` per step — see wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md) (user runs terminal by default).
+3. Update `PLAN.md` data-path table when manifest datasets change.
 3. (Recommended) Run `uv run python -m data_io.check` to view the manifest-backed data registry state before you start new work.
 4. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
 

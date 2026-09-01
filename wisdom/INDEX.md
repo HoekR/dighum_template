@@ -17,11 +17,16 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | [paper-figure-style](topics/paper-figure-style.md) | Use `paper-figures` add-on for matplotlib |
 | [observable-framework-bridge](topics/observable-framework-bridge.md) | Deferred plan: Observable Framework dashboard + MCP wired via `bridge.toml` |
 | [data-io-mcp](topics/data-io-mcp.md) | Cursor MCP for manifest registry, previews, provenance |
+| [workflow-mcp](topics/workflow-mcp.md) | Cursor MCP for PLAN.md progress and step guides |
+| [cost-sensitive-agent-workflow](topics/cost-sensitive-agent-workflow.md) | Step-by-step plans, doc split, user-run terminal, model tiers |
+| [macos-batch-execution-power](topics/macos-batch-execution-power.md) | Prevent macOS E-core downclocking & SSD sleep via `caffeinate -dims` |
+| [llm-pipeline-batching-strategy](topics/llm-pipeline-batching-strategy.md) | Staged batching (Step A dropout $\rightarrow$ SLM filter $\rightarrow$ HPC scale) |
 
 ## Journal (recent)
 
 | Month | Notes |
 |-------|-------|
+| [2026-08](journal/2026-08.md) | Cost-sensitive agent workflow (wvo_corr pilot) |
 | [2026-06](journal/2026-06.md) | Template repo, addons, wisdom layer |
 
 ## By project type
@@ -29,5 +34,7 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | Type | Read first |
 |------|------------|
 | Any new DH repo | manifest-discipline, provenance-fields, archivist-vs-data-io, data-io-mcp |
+| Existing derivative (dighum updates) | dighum `docs/SYNC-PROJECT.md` + `sync_project.sh` |
+| Multi-step / Bayesian / pub pipeline | cost-sensitive-agent-workflow, workflow-mcp |
 | Republic attendance / RPP | pattern-authority, pandas-pre-1678-dates, observable-framework-bridge |
 | LLM annotation | vectorized-pandas + addon `trifecta` |
