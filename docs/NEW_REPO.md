@@ -118,7 +118,8 @@ Keep the **generic** template rules; add project-specific guidance in these file
 | File | Customize |
 |------|-----------|
 | `AGENTS.md` | Domain docs, sibling repos, naming — **canonical** agent brief for both editors |
-| `PLAN.md` | Headlines: milestones checklist, dataset table; create `plans/` when multi-step |
+| `PLAN.md` | Headlines: milestones checklist, dataset table |
+| `plans/` | Empty `milestones/` + `steps/` skeleton; add guides when multi-step |
 | `docs/DATA.md` | Tier layout, canonical sources, phase policy |
 | `.cursor/rules/` / `.github/copilot-instructions.md` | Keep generic (regenerate from `template/shared/agent-standards.md`) |
 | `data_manifest.toml` | All datasets your pipeline reads/writes |

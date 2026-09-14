@@ -15,7 +15,7 @@
 
 ## Doc layout (recommended)
 
-Thin bootstrap: only root `PLAN.md` (headlines). Create `plans/` **when the project becomes multi-step** — do not copy empty step trees from the template.
+Thin bootstrap: root `PLAN.md` (headlines) plus empty `plans/` (`milestones/`, `steps/`). Add step and milestone files when the project becomes multi-step — no sample STEP stubs in the template.
 
 | File | Role |
 |------|------|
@@ -127,7 +127,7 @@ Long agent runs burn Cursor budget on shell retries, context bloat, and re-plann
 | Agent runs `pm.sample()` | User runs; agent interprets PPC if stuck |
 | Strong model writes boilerplate | Simple model + step guide |
 | Domain steps in dighum wisdom | Portable rules here; steps in project |
-| Empty `plans/` copied from template | Thin bootstrap; add `plans/` when needed |
+| Sample STEP stubs in every new repo | Empty `plans/steps/`; add guides when needed |
 
 ## Example invocation table
 

@@ -54,7 +54,8 @@ dighum_template/
 │   └── notebook_env_mcp/
 ├── template/                 # base files copied into each new project
 │   ├── README.md             # PROJECT_NAME substituted at bootstrap
-│   ├── PLAN.md               # headlines only; create plans/ on demand in the project
+│   ├── PLAN.md               # headlines only
+│   ├── plans/                # empty milestones/ + steps/ (fill on demand)
 │   ├── 00_project_dashboard.ipynb
 │   ├── tasks/                # reusable task overview notebooks
 │   └── shared/               # not copied; source for editor rules

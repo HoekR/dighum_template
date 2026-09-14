@@ -27,7 +27,7 @@ Optional legacy inventory (`llm_archivist`):
 
 | Source | Destination in new repo |
 |--------|-------------------------|
-| `template/*` (excl. `optional/`, `shared/`, `.venv/`) | AGENTS.md, PLAN.md, README.md, docs, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
+| `template/*` (excl. `optional/`, `shared/`, `.venv/`) | AGENTS.md, PLAN.md, plans/, README.md, docs, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 | `packages/data_io/` | `data_io/` |
 | `template/optional/archivist/` + `llm-archivist` | `llm_archivist/`, inbox scripts (only with `--with-archivist`) |
 | `tests/test_data_io.py` | `tests/` |
@@ -62,7 +62,7 @@ flowchart LR
 2. **`.cursor/rules/project-standards.mdc`** — always-apply Cursor rules (same body as Copilot instructions)
 3. **`.github/copilot-instructions.md`** — VS Code Copilot (same body; do not maintain separately)
 4. **`docs/DATA.md`** — tiers, phases, both tools
-5. **`PLAN.md`** — headlines (goal, checklist, data-path table); create `plans/` on demand for steps/milestones
+5. **`PLAN.md`** — headlines (goal, checklist, data-path table); `plans/` holds milestones and steps
 6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
 7. **`<package>.code-workspace`** — folder + extension recommendations only
 

@@ -1,6 +1,6 @@
 # Project plan
 
-Headlines only. Keep this file short. Create `plans/` in this repo when you need full plans, milestones, or step guides — see dighum_template wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md).
+Headlines only. Keep this file short. Full plans, milestones, and step guides live under [`plans/`](plans/) — see dighum_template wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md).
 
 ## Goal
 

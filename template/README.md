@@ -26,7 +26,8 @@ cursor PROJECT_NAME.code-workspace
 | Path | Role |
 |------|------|
 | `AGENTS.md` | Agent instructions (Cursor and VS Code Copilot) |
-| `PLAN.md` | Headlines checklist and dataset table (create `plans/` on demand) |
+| `PLAN.md` | Headlines checklist and dataset table |
+| `plans/` | Milestones and step guides (fill when multi-step) |
 | `docs/DATA.md` | Tiers, phases, manifest workflow |
 | `data_manifest.toml` | Tier roots and registered datasets |
 | `notebooks/` | Jupyter workspace (explore phase) |
