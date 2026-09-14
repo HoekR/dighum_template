@@ -10,7 +10,7 @@ Optional **specialized overlays** copied on top of the base template — domain 
 | **`paper-figures`** | Matplotlib slide/paper/print styles (GNB article palette) | `--addon paper-figures` |
 | **`trifecta`** | TRIFECTA structured LLM frame annotation | `--addon trifecta` |
 | **`data-io-mcp`** | Cursor MCP for `data_io` manifest registry + previews | `apply_addon.sh` |
-| **`workflow-mcp`** | Cursor MCP for `PLAN.md` progress + `docs/steps/` guides | `apply_addon.sh` |
+| **`workflow-mcp`** | Cursor MCP for `PLAN.md` progress + `plans/steps/` guides | `apply_addon.sh` |
 | **`_template`** | Scaffold for authoring a new add-on | (maintainers only) |
 
 List installed add-ons in the target project: `docs/addons/APPLIED.md` (created on apply).

@@ -1,6 +1,6 @@
 # workflow MCP server
 
-Cursor MCP tools for **cost-sensitive step-by-step** projects (`PLAN.md` + `docs/steps/`).
+Cursor MCP tools for **cost-sensitive step-by-step** projects (`PLAN.md` + `plans/steps/`).
 
 ## Optional dependency: dighum_template
 
@@ -9,7 +9,7 @@ MCP server code is **not** copied into derivative projects — intentionally, to
 | Layer | Location |
 |-------|----------|
 | MCP server | Sibling clone of [dighum_template](https://github.com/HoekR/dighum_template) → `packages/workflow_mcp/` |
-| Your project | Overlay only: `.cursor/mcp.json`, this README, `AGENTS.md` snippet; `PLAN.md` and `docs/steps/` stay here |
+| Your project | Overlay only: `.cursor/mcp.json`, this README, `AGENTS.md` snippet; root `PLAN.md` and on-demand `plans/steps/` stay here |
 
 Clone dighum_template once (any path), run `uv sync` in the package directory, and point `.cursor/mcp.json` at it. Pipeline/runtime code (`data_io/`, etc.) is still vendored in the derivative at bootstrap — only Cursor MCP servers stay upstream.
 
@@ -17,7 +17,7 @@ Clone dighum_template once (any path), run `uv sync` in the package directory, a
 
 ## Setup
 
-1. Ensure this project has `PLAN.md`, `AGENTS.md`, and step guides under `docs/steps/`.
+1. Ensure this project has `PLAN.md` and `AGENTS.md`. Create `plans/steps/` when you add multi-step guides (legacy `docs/steps/` still works).
 2. Install the MCP package once:
 
    ```bash
@@ -68,7 +68,7 @@ Clone dighum_template once (any path), run `uv sync` in the package directory, a
 | Symptom | Fix |
 |---------|-----|
 | `PLAN.md not found` | Check `--project-root` / `${workspaceFolder}` |
-| Empty checklist | Ensure `PLAN.md` has a markdown table with `\| **N** \| [STEP…](docs/steps/…)` rows |
+| Empty checklist | Ensure `PLAN.md` has a markdown table with `\| **N** \| [STEP…](plans/steps/…)` rows |
 | Step not found | Use `list_steps()`; step id is the number/letter after `STEP` (e.g. `3a`) |
 
 ## Related

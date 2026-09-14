@@ -62,7 +62,7 @@ flowchart LR
 2. **`.cursor/rules/project-standards.mdc`** — always-apply Cursor rules (same body as Copilot instructions)
 3. **`.github/copilot-instructions.md`** — VS Code Copilot (same body; do not maintain separately)
 4. **`docs/DATA.md`** — tiers, phases, both tools
-5. **`PLAN.md`** — status + data-path table
+5. **`PLAN.md`** — headlines (goal, checklist, data-path table); create `plans/` on demand for steps/milestones
 6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
 7. **`<package>.code-workspace`** — folder + extension recommendations only
 

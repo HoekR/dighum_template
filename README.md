@@ -7,6 +7,7 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 - optional legacy file inventory (`llm_archivist` via `--with-archivist`)
 - Living Project State (`docs/state.json`, `docs/STATE.md`, `docs/DECISIONS.md`, dashboard notebooks, `scripts/svz.py`)
 - Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`, `.github/copilot-instructions.md`)
+- plan-step executor custom agent (`.github/agents/plan-step-executor.agent.md`) for one bounded workflow step per chat
 - **`wisdom/`** — accumulated cross-project lessons (grows over time)
 - **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
 
@@ -30,6 +31,8 @@ Full guide: **[docs/NEW_REPO.md](docs/NEW_REPO.md)**
 dighum_template/
 ├── docs/NEW_REPO.md          # how to start a new repo
 ├── docs/SKELETON.md          # provenance model + LLM workflow
+├── docs/SYNC-PROJECT.md      # sync updates into derivatives
+├── plans/                    # maintainer plans (not copied into projects)
 ├── wisdom/                   # accumulated wisdom (topics + journal)
 │   ├── INDEX.md
 │   └── topics/
@@ -44,13 +47,18 @@ dighum_template/
 │   ├── copy_wisdom.sh        # copy portable wisdom topics
 │   ├── sync_editor_rules.sh  # Cursor + Copilot rules from shared source
 │   └── sync_data_io.sh       # refresh packages/data_io (maintainers)
-├── packages/data_io/
+├── packages/
+│   ├── data_io/              # vendored into each project
+│   ├── data_io_mcp/          # Cursor MCP (stays in dighum)
+│   ├── workflow_mcp/         # PLAN.md + plans/steps MCP
+│   └── notebook_env_mcp/
 ├── template/                 # base files copied into each new project
 │   ├── README.md             # PROJECT_NAME substituted at bootstrap
+│   ├── PLAN.md               # headlines only; create plans/ on demand in the project
 │   ├── 00_project_dashboard.ipynb
 │   ├── tasks/                # reusable task overview notebooks
 │   └── shared/               # not copied; source for editor rules
-└── tests/test_data_io.py
+└── tests/
 ```
 
 ## Wisdom and add-ons
@@ -76,8 +84,13 @@ Catalog: [addons/README.md](addons/README.md) · Index: [wisdom/INDEX.md](wisdom
 
 ```bash
 ./scripts/sync_project.sh ~/develop/my-project --all
+./scripts/sync_project.sh ~/develop/my-project --agents
 ./scripts/update_project.sh ~/develop/my-project --dry-run
 ```
+
+New projects include the plan-step executor automatically. The `--agents` form
+adds missing template custom agents to an existing project without overwriting
+local agent customizations.
 
 After editing `template/`, `wisdom/`, or `addons/`, test:
 
@@ -87,6 +100,7 @@ TMP=$(mktemp -d)
 test ! -e "$TMP/test/README.md.template"
 test ! -e "$TMP/test/shared"
 test -f "$TMP/test/.github/copilot-instructions.md"
+test -f "$TMP/test/.github/agents/plan-step-executor.agent.md"
 ```
 
 ## Reference projects

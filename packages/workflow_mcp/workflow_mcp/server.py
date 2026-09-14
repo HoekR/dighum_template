@@ -28,7 +28,7 @@ mcp = FastMCP(
     "workflow",
     instructions=(
         "Cost-sensitive step-by-step workflow for DH pipeline projects. "
-        "Read PLAN.md progress and docs/steps guides — one step per chat; "
+        "Read PLAN.md progress and plans/steps guides — one step per chat; "
         "never execute the whole plan in one session."
     ),
 )
@@ -48,7 +48,7 @@ def get_current_step() -> dict[str, Any]:
 
 @mcp.tool
 def list_steps() -> list[dict[str, Any]]:
-    """List step guide files under docs/steps/."""
+    """List step guide files under plans/steps/ (fallback: docs/steps/)."""
     return list_step_guides(_root())
 
 
@@ -109,7 +109,7 @@ def main(argv: list[str] | None = None) -> None:
         "--project-root",
         type=Path,
         default=None,
-        help="Project root containing PLAN.md, AGENTS.md, and docs/steps/",
+        help="Project root containing PLAN.md, AGENTS.md, and plans/steps/",
     )
     parser.add_argument(
         "--transport",

@@ -31,6 +31,8 @@ Pre–Step 0 projects (like `wvo_corr` today) have neither — skip these checks
 | `--data-io` | `rsync` `dighum_template/packages/data_io/` → project `data_io/` |
 | `--wisdom` | Copy portable wisdom topics → `docs/wisdom/` (`copy_wisdom.sh`) |
 | `--editor-rules` | Refresh `.cursor/rules/project-standards.mdc` + `.github/copilot-instructions.md` |
+| `--agents` | Add missing template custom agents under `.github/agents/` (never overwrite local agents) |
+| `--state` | Refresh Living Project State helpers (`scripts/svz.py`, dashboard stubs) when missing |
 | `--addons` | Re-apply every add-on listed in `docs/addons/APPLIED.md` |
 | `--addon NAME` | Re-apply one add-on (repeatable) |
 | `--mcp` | `uv sync` MCP packages in dighum_template (`workflow_mcp`, `data_io_mcp`, `notebook_env_mcp`) — not copied into the project |
@@ -39,7 +41,7 @@ Pre–Step 0 projects (like `wvo_corr` today) have neither — skip these checks
 
 ## What stays manual
 
-These are project-specific or often customized — **compare and merge by hand**:
+These are project-specific or often customized — **compare and merge by hand** (sync must not clobber them):
 
 | File / area | Why |
 |-------------|-----|
@@ -47,7 +49,7 @@ These are project-specific or often customized — **compare and merge by hand**
 | `AGENTS.md` add-on blocks | Re-apply skips sections that already exist |
 | `pyproject.toml` | Extra dependencies per project |
 | `data_manifest.toml` | Datasets and tier roots |
-| `PLAN.md`, `docs/steps/` | Project pipeline progress |
+| `PLAN.md`, `plans/` | Headlines + on-demand full plans / milestones / steps |
 | Domain code, notebooks | Not template files |
 
 To refresh base template files (`template/AGENTS.md`, etc.), diff against `dighum_template/template/` and merge selectively.

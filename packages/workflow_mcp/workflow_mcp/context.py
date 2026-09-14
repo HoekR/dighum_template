@@ -1,4 +1,4 @@
-"""Resolve project root for PLAN.md + docs/steps workflow."""
+"""Resolve project root for PLAN.md + plans/steps workflow."""
 
 from __future__ import annotations
 

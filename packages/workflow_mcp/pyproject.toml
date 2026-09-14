@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "workflow-mcp"
 version = "0.1.0"
-description = "MCP server exposing PLAN.md progress and docs/steps guides for cost-sensitive agent workflow"
+description = "MCP server exposing PLAN.md progress and plans/steps guides for cost-sensitive agent workflow"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

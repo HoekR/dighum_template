@@ -1,6 +1,6 @@
 # workflow-mcp add-on
 
-Optional overlay for multi-step DH projects using `PLAN.md` + `docs/steps/`.
+Optional overlay for multi-step DH projects using `PLAN.md` + `plans/steps/`.
 
 Copies:
 

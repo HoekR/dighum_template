@@ -4,7 +4,7 @@ Optional Cursor MCP server for cost-sensitive step workflow. Prefer MCP over rea
 
 - `get_plan_status()` — parsed checklist from `PLAN.md`
 - `get_current_step()` — first incomplete step
-- `list_steps()` — `docs/steps/STEP*.md` index
+- `list_steps()` — `plans/steps/STEP*.md` index (fallback: `docs/steps/`)
 - `get_step_guide(step_id)` — one step guide only (e.g. `3a`)
 - `get_workflow_rules()` — `docs/wisdom/cost-sensitive-agent-workflow.md` if present
 

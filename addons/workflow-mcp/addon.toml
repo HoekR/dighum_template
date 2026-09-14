@@ -1,6 +1,6 @@
 name = "workflow-mcp"
 title = "workflow MCP server"
-description = "Cursor MCP tools for PLAN.md progress and docs/steps guides"
+description = "Cursor MCP tools for PLAN.md progress and plans/steps guides"
 
 copy = [
   "docs/addons/workflow-mcp",

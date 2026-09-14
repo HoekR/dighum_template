@@ -6,7 +6,7 @@ Step-by-step guide for bootstrapping a historical-data pipeline project with man
 
 Optional: clone [llm-archivist](../../llm-archivist) only if you need legacy file inventory (`--with-archivist`).
 
-For **search/browse webapps** (e.g. RAA), use sibling [`dighum_web_template`](../../dighum_web_template) and see [PLAN-raa-modernized.md](PLAN-raa-modernized.md).
+For **search/browse webapps** (e.g. RAA), use sibling [`dighum_web_template`](../../dighum_web_template) and see [PLAN-raa-modernized.md](../plans/PLAN-raa-modernized.md).
 
 ---
 
@@ -118,7 +118,7 @@ Keep the **generic** template rules; add project-specific guidance in these file
 | File | Customize |
 |------|-----------|
 | `AGENTS.md` | Domain docs, sibling repos, naming — **canonical** agent brief for both editors |
-| `PLAN.md` | Milestones, dataset table, current phase |
+| `PLAN.md` | Headlines: milestones checklist, dataset table; create `plans/` when multi-step |
 | `docs/DATA.md` | Tier layout, canonical sources, phase policy |
 | `.cursor/rules/` / `.github/copilot-instructions.md` | Keep generic (regenerate from `template/shared/agent-standards.md`) |
 | `data_manifest.toml` | All datasets your pipeline reads/writes |
@@ -189,7 +189,7 @@ cd ~/develop/dighum_template && ./scripts/sync_data_io.sh
 ./scripts/sync_project.sh ~/develop/MyNewProject --data-io
 ```
 
-**Manual merge** still required for `AGENTS.md` (base), `pyproject.toml`, `data_manifest.toml`, `PLAN.md`, and domain code. MCP server packages stay in dighum_template (optional sibling) — `--mcp` only runs `uv sync` there.
+**Manual merge** still required for `AGENTS.md` (base), `pyproject.toml`, `data_manifest.toml`, `PLAN.md` / `plans/`, and domain code. MCP server packages stay in dighum_template (optional sibling) — `--mcp` only runs `uv sync` there.
 
 With archivist installed, sync `llm_archivist/` manually:
 

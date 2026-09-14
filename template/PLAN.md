@@ -1,12 +1,26 @@
 # Project plan
 
+Headlines only. Keep this file short. Create `plans/` in this repo when you need full plans, milestones, or step guides — see dighum_template wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md).
+
 ## Goal
 
 <!-- One paragraph: what this project produces -->
 
-For multi-step pipelines (Bayesian, publication, migration), split detailed guides into
-`docs/steps/STEP*.md` and keep this file as a checklist. See dighum_template wisdom:
-[cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md).
+## Milestones
+
+<!-- Add rows when you create plans/milestones/M*.md -->
+
+| Milestone | Doc | Status |
+|-----------|-----|--------|
+| | | |
+
+## Progress checklist
+
+<!-- Multi-step work: link guides under plans/steps/STEP*.md (MCP-compatible table) -->
+
+| Step | Guide | Done when | Status |
+|------|-------|-----------|--------|
+| | | | |
 
 ## Data paths
 
@@ -16,22 +30,8 @@ Logical names live in [`data_manifest.toml`](data_manifest.toml). Verify with `u
 |--------------|-------|-------|
 | | explore / semi / frozen | |
 
-## Phases
-
-### Phase 1 — Explore
-
-- [ ] Register inputs in manifest
-- [ ] `data_io.check` passes
-
-### Phase 2 — Semi-structured
-
-- [ ] Outputs via `save_semi_structured`
-
-### Phase 3 — Frozen
-
-- [ ] Promote stable tables to `save_parquet`
-
 ## Outputs
 
 | Artifact | Logical name | Path (via manifest) |
 |----------|--------------|---------------------|
+| | | |

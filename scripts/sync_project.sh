@@ -8,11 +8,12 @@
 #   --data-io          Refresh vendored data_io/ from dighum_template
 #   --wisdom           Copy portable wisdom topics → docs/wisdom/
 #   --editor-rules     Refresh .cursor/rules + .github/copilot-instructions.md
+#   --agents           Copy missing template custom agents → .github/agents/
 #   --state            Add/update Living Project State CLI and missing dashboard files
 #   --addons           Re-apply add-ons listed in docs/addons/APPLIED.md
 #   --addon NAME       Re-apply one add-on (repeatable)
 #   --mcp              uv sync MCP packages in dighum_template (not copied into project)
-#   --all              --data-io --wisdom --editor-rules --state --addons --mcp
+#   --all              --data-io --wisdom --editor-rules --agents --state --addons --mcp
 #   --dry-run          Print actions without executing
 #
 # Examples:
@@ -20,7 +21,7 @@
 #   ./scripts/sync_project.sh ~/develop/wvo_corr --wisdom --addon workflow-mcp
 #
 # Manual merge still required for: AGENTS.md (base), pyproject.toml, data_manifest.toml,
-# PLAN.md, domain code. Re-applying add-ons updates docs/addons/* but skips AGENTS.md
+# PLAN.md, plans/, domain code. Re-applying add-ons updates docs/addons/* but skips AGENTS.md
 # sections that already exist.
 
 set -euo pipefail
@@ -30,6 +31,7 @@ PROJECT=""
 DO_DATA_IO=false
 DO_WISDOM=false
 DO_EDITOR=false
+DO_AGENTS=false
 DO_STATE=false
 DO_ADDONS=false
 DO_MCP=false
@@ -45,6 +47,7 @@ while [[ $# -gt 0 ]]; do
     --data-io) DO_DATA_IO=true; shift ;;
     --wisdom) DO_WISDOM=true; shift ;;
     --editor-rules) DO_EDITOR=true; shift ;;
+    --agents) DO_AGENTS=true; shift ;;
     --state) DO_STATE=true; shift ;;
     --addons) DO_ADDONS=true; shift ;;
     --mcp) DO_MCP=true; shift ;;
@@ -52,6 +55,7 @@ while [[ $# -gt 0 ]]; do
       DO_DATA_IO=true
       DO_WISDOM=true
       DO_EDITOR=true
+      DO_AGENTS=true
       DO_STATE=true
       DO_ADDONS=true
       DO_MCP=true
@@ -90,7 +94,7 @@ if [[ ! -d "$PROJECT" ]]; then
   exit 1
 fi
 
-if [[ "$DO_DATA_IO$DO_WISDOM$DO_EDITOR$DO_STATE$DO_ADDONS$DO_MCP" == "false" && ${#ADDON_NAMES[@]} -eq 0 ]]; then
+if [[ "$DO_DATA_IO$DO_WISDOM$DO_EDITOR$DO_AGENTS$DO_STATE$DO_ADDONS$DO_MCP" == "false" && ${#ADDON_NAMES[@]} -eq 0 ]]; then
   echo "Error: no sync targets selected (try --all or see --help)" >&2
   exit 1
 fi
@@ -156,6 +160,17 @@ fi
 
 if [[ "$DO_EDITOR" == true ]]; then
   run "$REPO_ROOT/scripts/sync_editor_rules.sh" "$PROJECT"
+fi
+
+if [[ "$DO_AGENTS" == true ]]; then
+  if [[ ! -d "$REPO_ROOT/template/.github/agents" ]]; then
+    echo "Warning: skipping --agents (no template custom agents)" >&2
+  else
+    for agent in "$REPO_ROOT/template/.github/agents/"*.agent.md; do
+      [[ -e "$agent" ]] || continue
+      copy_missing_or_new "$agent" "$PROJECT/.github/agents/$(basename "$agent")"
+    done
+  fi
 fi
 
 if [[ "$DO_STATE" == true ]]; then
@@ -242,7 +257,7 @@ fi
 
 cat <<EOF
 
-Manual merge may still be needed for AGENTS.md (base), pyproject.toml, PLAN.md.
+Manual merge may still be needed for AGENTS.md (base), pyproject.toml, PLAN.md, plans/.
 Add-on docs under docs/addons/ were refreshed; AGENTS.md add-on blocks are not overwritten if already present.
 
 EOF

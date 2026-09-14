@@ -1,6 +1,6 @@
 # workflow MCP server
 
-FastMCP server exposing `PLAN.md` progress and `docs/steps/` guides to Cursor agents.
+FastMCP server exposing `PLAN.md` progress and `plans/steps/` guides to Cursor agents.
 
 ## Install (once)
 
@@ -38,7 +38,7 @@ Server code stays in [dighum_template](https://github.com/HoekR/dighum_template)
 
 - `get_plan_status()` — parsed PLAN.md checklist
 - `get_current_step()` — first incomplete step
-- `list_steps()` — files under `docs/steps/`
+- `list_steps()` — files under `plans/steps/` (fallback: `docs/steps/`)
 - `get_step_guide(step_id)` — read `STEP*.md` for one step
 - `get_workflow_rules()` — cost-sensitive workflow wisdom (if copied to project)
 
@@ -60,4 +60,4 @@ Target project must have:
 
 - `PLAN.md` with a progress checklist table at root
 - `AGENTS.md` at root
-- Step guides in `docs/steps/STEP*.md` (recommended)
+- Step guides in `plans/steps/STEP*.md` when multi-step (create on demand; legacy `docs/steps/` still works)

@@ -17,7 +17,7 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | [paper-figure-style](topics/paper-figure-style.md) | Use `paper-figures` add-on for matplotlib |
 | [observable-framework-bridge](topics/observable-framework-bridge.md) | Deferred plan: Observable Framework dashboard + MCP wired via `bridge.toml` |
 | [data-io-mcp](topics/data-io-mcp.md) | Cursor MCP for manifest registry, previews, provenance |
-| [workflow-mcp](topics/workflow-mcp.md) | Cursor MCP for PLAN.md progress and step guides |
+| [workflow-mcp](topics/workflow-mcp.md) | Cursor MCP for PLAN.md progress and plans/steps guides |
 | [cost-sensitive-agent-workflow](topics/cost-sensitive-agent-workflow.md) | Step-by-step plans, doc split, user-run terminal, model tiers |
 | [macos-batch-execution-power](topics/macos-batch-execution-power.md) | Prevent macOS E-core downclocking & SSD sleep via `caffeinate -dims` |
 | [llm-pipeline-batching-strategy](topics/llm-pipeline-batching-strategy.md) | Staged batching (Step A dropout $\rightarrow$ SLM filter $\rightarrow$ HPC scale) |
