@@ -7,7 +7,7 @@
 # Options:
 #   --data-io          Refresh vendored data_io/ from dighum_template
 #   --wisdom           Copy portable wisdom topics → docs/wisdom/
-#   --editor-rules     Refresh .cursor/rules + .github/copilot-instructions.md
+#   --editor-rules     Refresh .cursor/rules + .github/copilot-instructions.md + CLAUDE.md
 #   --agents           Copy missing template custom agents → .github/agents/
 #   --state            Add/update Living Project State CLI and missing dashboard files
 #   --addons           Re-apply add-ons listed in docs/addons/APPLIED.md

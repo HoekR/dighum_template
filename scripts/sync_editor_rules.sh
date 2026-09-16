@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Write Cursor + VS Code Copilot rule files from template/shared/agent-standards.md
+# Write Cursor + VS Code Copilot + Claude Code rule files from template/shared/agent-standards.md
 #
 # Usage:
 #   ./scripts/sync_editor_rules.sh              # refresh files under template/
@@ -22,7 +22,7 @@ mkdir -p "$TARGET/.cursor/rules" "$TARGET/.github"
 
 cat >"$TARGET/.cursor/rules/project-standards.mdc" <<EOF
 ---
-description: Core project standards for DH data projects (shared with VS Code Copilot)
+description: Core project standards for DH data projects (shared with VS Code Copilot + Claude Code)
 alwaysApply: true
 ---
 
@@ -36,5 +36,14 @@ cat >"$TARGET/.github/copilot-instructions.md" <<EOF
 $BODY
 EOF
 
+cat >"$TARGET/CLAUDE.md" <<EOF
+<!-- Same body as .cursor/rules/project-standards.mdc / .github/copilot-instructions.md.
+     Source: dighum_template/template/shared/agent-standards.md
+     Canonical brief: AGENTS.md (read that file for full project context). -->
+
+$BODY
+EOF
+
 echo "Synced editor rules → $TARGET/.cursor/rules/project-standards.mdc"
 echo "Synced editor rules → $TARGET/.github/copilot-instructions.md"
+echo "Synced editor rules → $TARGET/CLAUDE.md"

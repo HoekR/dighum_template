@@ -200,7 +200,7 @@ Optional later:
   $REPO_ROOT/scripts/copy_wisdom.sh $TARGET
   $REPO_ROOT/scripts/sync_project.sh $TARGET --all   # after dighum updates
 
-For LLM coding: read AGENTS.md, PLAN.md, .cursor/rules/, and .github/copilot-instructions.md
+For LLM coding: read AGENTS.md, PLAN.md, .cursor/rules/, .github/copilot-instructions.md, and CLAUDE.md
 Wisdom index: $REPO_ROOT/wisdom/INDEX.md
 Add-ons catalog: $REPO_ROOT/addons/README.md
 Full guide: $REPO_ROOT/docs/NEW_REPO.md

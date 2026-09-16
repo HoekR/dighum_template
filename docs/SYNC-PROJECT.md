@@ -30,7 +30,7 @@ Pre–Step 0 projects (like `wvo_corr` today) have neither — skip these checks
 |------|--------|
 | `--data-io` | `rsync` `dighum_template/packages/data_io/` → project `data_io/` |
 | `--wisdom` | Copy portable wisdom topics → `docs/wisdom/` (`copy_wisdom.sh`) |
-| `--editor-rules` | Refresh `.cursor/rules/project-standards.mdc` + `.github/copilot-instructions.md` |
+| `--editor-rules` | Refresh `.cursor/rules/project-standards.mdc` + `.github/copilot-instructions.md` + `CLAUDE.md` |
 | `--agents` | Add missing template custom agents under `.github/agents/` (never overwrite local agents) |
 | `--state` | Refresh Living Project State helpers (`scripts/svz.py`, dashboard stubs) when missing |
 | `--addons` | Re-apply every add-on listed in `docs/addons/APPLIED.md` |

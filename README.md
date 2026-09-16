@@ -6,7 +6,7 @@ Template repository for bootstrapping **digital humanities data pipeline** proje
 - provenance sidecars on all pipeline writes
 - optional legacy file inventory (`llm_archivist` via `--with-archivist`)
 - Living Project State (`docs/state.json`, `docs/STATE.md`, `docs/DECISIONS.md`, dashboard notebooks, `scripts/svz.py`)
-- Cursor/VS Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`, `.github/copilot-instructions.md`)
+- Cursor/VS Code/Claude Code workspace profile (`.vscode/`, `.code-workspace`, `.cursor/rules/`, `.github/copilot-instructions.md`, `CLAUDE.md`)
 - plan-step executor custom agent (`.github/agents/plan-step-executor.agent.md`) for one bounded workflow step per chat
 - **`wisdom/`** — accumulated cross-project lessons (grows over time)
 - **`addons/`** — optional specialized overlays (RPP, TRIFECTA, …)
@@ -101,6 +101,7 @@ TMP=$(mktemp -d)
 test ! -e "$TMP/test/README.md.template"
 test ! -e "$TMP/test/shared"
 test -f "$TMP/test/.github/copilot-instructions.md"
+test -f "$TMP/test/CLAUDE.md"
 test -f "$TMP/test/.github/agents/plan-step-executor.agent.md"
 ```
 

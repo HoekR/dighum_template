@@ -1,3 +1,7 @@
+<!-- Same body as .cursor/rules/project-standards.mdc / .github/copilot-instructions.md.
+     Source: dighum_template/template/shared/agent-standards.md
+     Canonical brief: AGENTS.md (read that file for full project context). -->
+
 # Agent standards (Cursor + VS Code Copilot + Claude Code)
 
 Read `AGENTS.md`, `docs/DATA.md`, and `PLAN.md` before pipeline work.
