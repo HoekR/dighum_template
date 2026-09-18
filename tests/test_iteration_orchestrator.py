@@ -21,12 +21,14 @@ ready = true
 
 [[stages]]
 id = "upstream"
+done = true
 done_when = "base ready"
 requires_facts = []
 requires_stages = []
 
 [[stages]]
 id = "downstream"
+done = false
 done_when = "calibrated"
 requires_facts = ["ready"]
 requires_stages = ["upstream"]
@@ -42,12 +44,14 @@ id = "partner_a"
 stage = "upstream"
 max_attempts = 3
 escalate_to = "ask_human"
+reopen = true
 
 [[concerns]]
 id = "partner_b"
 stage = "upstream"
 max_attempts = 3
 escalate_to = "ask_human"
+reopen = true
 
 [[interlocks]]
 a = "partner_a"

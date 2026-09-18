@@ -17,24 +17,28 @@ export_contract_defined = false
 
 [[stages]]
 id = "inputs_ready"
+done = true
 done_when = "Manifest datasets resolve; data_io.check passes"
 requires_facts = ["inputs_registered"]
 requires_stages = []
 
 [[stages]]
 id = "baseline_eval"
+done = true
 done_when = "First eval/report on a frozen slice exists"
 requires_facts = ["eval_harness_ready"]
 requires_stages = ["inputs_ready"]
 
 [[stages]]
 id = "method_calibrate"
+done = false
 done_when = "Method/spec or prompts stable enough for a second eval pass"
 requires_facts = ["eval_harness_ready"]
 requires_stages = ["baseline_eval"]
 
 [[stages]]
 id = "publish_slice"
+done = false
 done_when = "Bounded export or figure set published with provenance"
 requires_facts = ["export_contract_defined"]
 requires_stages = ["method_calibrate"]

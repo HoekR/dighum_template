@@ -238,23 +238,15 @@ def _stage_facts_ok(stage: Stage, config: IterationConfig) -> bool:
 
 
 def _stage_satisfied(stage: Stage, config: IterationConfig) -> bool:
-    """Prereq stage OK if marked done, or all its facts + nested stage deps hold."""
-    if stage.done:
-        return True
-    if not _stage_facts_ok(stage, config):
-        return False
-    for sid in stage.requires_stages:
-        nested = config.stages.get(sid)
-        if nested is None or not _stage_satisfied(nested, config):
-            return False
-    return True
+    """A required stage counts only when explicitly marked done."""
+    return bool(stage.done)
 
 
 def _stage_missing_prereqs(
     stage: Stage,
     config: IterationConfig,
 ) -> list[str]:
-    """What blocks working *on* this stage (its own facts + required stages)."""
+    """What blocks working *on* this stage (its own facts + required stages done)."""
     missing: list[str] = []
     for fact in stage.requires_facts:
         if not config.facts.get(fact, False):
@@ -263,7 +255,7 @@ def _stage_missing_prereqs(
         nested = config.stages.get(sid)
         if nested is None:
             missing.append(f"stage_missing:{sid}")
-        elif not _stage_satisfied(nested, config):
+        elif not nested.done:
             missing.append(f"stage:{sid}")
     return missing
 
