@@ -64,6 +64,7 @@ uv run --directory packages/workflow_mcp workflow-orchestrator show-config \
 Example config: [`examples/iteration.toml`](examples/iteration.toml) → copy to project `plans/iteration.toml`.
 
 Wisdom: `wisdom/topics/iteration-decision-framework.md`.
+For **which track next** (metric trends), use project `scripts/svz.py review` — see `wisdom/topics/iteration-policy.md`.
 
 ## Environment
 

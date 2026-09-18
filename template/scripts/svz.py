@@ -3,6 +3,15 @@
 
 The machine source of truth is docs/state.json. docs/STATE.md is rendered from
 that file so AI agents and humans can read a compact, visual dashboard.
+
+`review` supports the continue/switch/stop discipline in
+docs/wisdom/iteration-policy.md (or the project's copy): it classifies each
+track's latest recorded metric delta (improving / stagnant / regressing) so a
+session can start by asking "which track has the clearest next gain" instead of
+resuming whatever was last open.
+
+Compose with workflow-mcp iteration orchestrator (plans/iteration.toml) for
+within-track polish gates — see wisdom iteration-decision-framework.
 """
 
 from __future__ import annotations
@@ -21,10 +30,15 @@ STATE_MD = Path("docs/STATE.md")
 DECISIONS_MD = Path("docs/DECISIONS.md")
 MANUAL_MARKER = "<!-- Manual notes below this line are preserved by scripts/svz.py render. -->"
 VALID_STATUSES = {"todo", "inprogress", "done", "blocked"}
+DEFAULT_TREND_THRESHOLD = 0.03
 
 
 def now_stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
+
+
+def today_date() -> str:
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def load_state() -> dict[str, Any]:
@@ -56,6 +70,49 @@ def find_task(state: dict[str, Any], task_id: str) -> dict[str, Any] | None:
         if task.get("id") == task_id:
             return task
     return None
+
+
+def parse_number(value: Any) -> float | None:
+    """Best-effort numeric read of a metric value: '0.576', '70.7%', '9/21'."""
+    text = str(value).strip()
+    if not text:
+        return None
+    fraction = re.fullmatch(r"(-?\d+(?:\.\d+)?)\s*/\s*(-?\d+(?:\.\d+)?)", text)
+    if fraction:
+        numerator, denominator = (float(part) for part in fraction.groups())
+        return numerator / denominator if denominator else None
+    is_percent = text.endswith("%")
+    match = re.search(r"-?\d+(?:\.\d+)?", text)
+    if not match:
+        return None
+    number = float(match.group())
+    return number / 100 if is_percent else number
+
+
+def classify_trend(history: list[dict[str, Any]], threshold: float) -> tuple[str, float | None]:
+    """Compare the two most recent numeric history points.
+
+    Returns (verdict, delta) where verdict is one of:
+    "improving", "stagnant", "regressing", "insufficient-history".
+    Direction is read literally (higher = improving) — invert the metric's own
+    value at recording time (e.g. record 1 - other_bucket_pct) if lower is better.
+    """
+    numeric_points = [parse_number(point.get("value")) for point in history]
+    numeric_points = [value for value in numeric_points if value is not None]
+    if len(numeric_points) < 2:
+        return "insufficient-history", None
+    previous, latest = numeric_points[-2], numeric_points[-1]
+    delta = latest - previous
+    relative = delta / abs(previous) if previous else (None if delta == 0 else delta)
+    if relative is None:
+        verdict = "stagnant"
+    elif relative > threshold:
+        verdict = "improving"
+    elif relative < -threshold:
+        verdict = "regressing"
+    else:
+        verdict = "stagnant"
+    return verdict, delta
 
 
 def preserved_notes() -> str:
@@ -91,7 +148,7 @@ def render_markdown(state: dict[str, Any]) -> str:
     for task in tasks:
         node_id = mermaid_id(str(task.get("id", "task")))
         label = f"{task.get('id', '')}: {task.get('title', '')}".replace('"', "'")
-        lines.append(f"    {node_id}[\"{label}\"] ::: {mermaid_class(str(task.get('status', 'todo')))}")
+        lines.append(f"    {node_id}[\"{label}\"] :::{mermaid_class(str(task.get('status', 'todo')))}")
     if dependencies:
         for dependency in dependencies:
             source = mermaid_id(str(dependency.get("from", "")))
@@ -116,12 +173,14 @@ def render_markdown(state: dict[str, Any]) -> str:
     lines.extend(["", "## Active Focus", "", str(state.get("active_focus") or "No active focus recorded."), ""])
     lines.extend(["## Key Intermediate Results & Metrics", ""])
     if metrics:
-        for metric in metrics:
-            value = metric.get("value", "")
-            label = metric.get("label") or metric.get("name") or "metric"
-            scope = metric.get("scope")
+        for metric_entry in metrics:
+            value = metric_entry.get("value", "")
+            label = metric_entry.get("label") or metric_entry.get("name") or "metric"
+            scope = metric_entry.get("scope")
             prefix = f"{scope} — " if scope else ""
-            lines.append(f"- **{prefix}{label}:** {value}")
+            verdict, delta = classify_trend(metric_entry.get("history", []), DEFAULT_TREND_THRESHOLD)
+            trend = f" ({verdict}, Δ{delta:+.3f})" if delta is not None else ""
+            lines.append(f"- **{prefix}{label}:** {value}{trend}")
     else:
         lines.append("No metrics recorded yet.")
 
@@ -157,9 +216,9 @@ def status(_: argparse.Namespace) -> None:
         print(f"  [{task_symbol(str(task.get('status', 'todo')))}] {task.get('id')}: {task.get('title')}")
     if state.get("metrics"):
         print("\nMetrics:")
-        for metric in state["metrics"]:
-            scope = f"{metric.get('scope')}: " if metric.get("scope") else ""
-            print(f"  - {scope}{metric.get('label') or metric.get('name')}: {metric.get('value')}")
+        for metric_entry in state["metrics"]:
+            scope = f"{metric_entry.get('scope')}: " if metric_entry.get("scope") else ""
+            print(f"  - {scope}{metric_entry.get('label') or metric_entry.get('name')}: {metric_entry.get('value')}")
 
 
 def update(args: argparse.Namespace) -> None:
@@ -190,15 +249,31 @@ def focus(args: argparse.Namespace) -> None:
 
 
 def metric(args: argparse.Namespace) -> None:
+    """Record a metric value; append to history (same day overwrites last point)."""
     state = load_state()
-    entry = {"scope": args.scope, "name": args.name, "label": args.label or args.name, "value": args.value}
+    today = today_date()
     metrics = state.setdefault("metrics", [])
-    for index, existing in enumerate(metrics):
+    for existing in metrics:
         if existing.get("scope") == args.scope and existing.get("name") == args.name:
-            metrics[index] = entry
+            history = existing.setdefault("history", [])
+            if history and history[-1].get("date") == today:
+                history[-1]["value"] = args.value
+            else:
+                history.append({"date": today, "value": args.value})
+            existing["value"] = args.value
+            if args.label:
+                existing["label"] = args.label
             break
     else:
-        metrics.append(entry)
+        metrics.append(
+            {
+                "scope": args.scope,
+                "name": args.name,
+                "label": args.label or args.name,
+                "value": args.value,
+                "history": [{"date": today, "value": args.value}],
+            }
+        )
     save_state(state)
     STATE_MD.write_text(render_markdown(state), encoding="utf-8")
     print(f"Recorded metric {args.name}={args.value}")
@@ -228,6 +303,54 @@ def query(args: argparse.Namespace) -> None:
     print(json.dumps(state, ensure_ascii=False, indent=2))
 
 
+def review(args: argparse.Namespace) -> None:
+    state = load_state()
+    threshold = args.threshold
+    by_scope: dict[str, list[dict[str, Any]]] = {}
+    for metric_entry in state.get("metrics", []):
+        by_scope.setdefault(str(metric_entry.get("scope")), []).append(metric_entry)
+
+    active, pending, closed = [], [], []
+    for task in state.get("tasks", []):
+        bucket = {"inprogress": active, "todo": pending}.get(str(task.get("status", "todo")), closed)
+        bucket.append(task)
+
+    print("== Active tracks needing a decision ==")
+    if not active:
+        print("  (none marked inprogress)")
+    for task in active:
+        print(f"- {task.get('id')}: {task.get('title')}")
+        task_metrics = by_scope.get(str(task.get("id")), [])
+        if not task_metrics:
+            print("    no metric recorded — run `svz.py metric ...` before judging this track")
+            continue
+        for metric_entry in task_metrics:
+            verdict, delta = classify_trend(metric_entry.get("history", []), threshold)
+            delta_str = f"{delta:+.3f}" if delta is not None else "n/a"
+            flag = "  <- cutoff candidate" if verdict == "stagnant" else ""
+            print(f"    {metric_entry.get('label')}: {metric_entry.get('value')} (Δ {delta_str}, {verdict}){flag}")
+
+    print("\n== Not started ==")
+    if not pending:
+        print("  (none)")
+    for task in pending:
+        note = f" — {task['notes']}" if task.get("notes") else ""
+        print(f"- {task.get('id')}: {task.get('title')}{note}")
+
+    print("\n== Closed (done / blocked) ==")
+    if not closed:
+        print("  (none)")
+    for task in closed:
+        note = f" — {task['notes']}" if task.get("notes") else ""
+        print(f"- [{task.get('status')}] {task.get('id')}: {task.get('title')}{note}")
+
+    print(
+        "\nSee docs/wisdom/iteration-policy.md (or dighum_template wisdom) before "
+        "switching tracks or recording a cutoff (`svz.py decision ...`). "
+        "Within a track, use workflow-orchestrator advise if plans/iteration.toml exists."
+    )
+
+
 def doctor(_: argparse.Namespace) -> None:
     state = load_state()
     problems: list[str] = []
@@ -237,6 +360,14 @@ def doctor(_: argparse.Namespace) -> None:
     for task in state.get("tasks", []):
         if task.get("status") not in VALID_STATUSES:
             problems.append(f"Invalid status for {task.get('id')}: {task.get('status')}")
+    task_id_set = {str(task_id) for task_id in task_ids}
+    for metric_entry in state.get("metrics", []):
+        scope = str(metric_entry.get("scope"))
+        if scope not in task_id_set and not any(scope.startswith(f"{task_id}-") for task_id in task_id_set):
+            problems.append(
+                f"Metric {metric_entry.get('name')!r} has scope {metric_entry.get('scope')!r} "
+                "that does not match any task id (or <task_id>-<subid> pattern)"
+            )
     if problems:
         for problem in problems:
             print(f"ERROR: {problem}", file=sys.stderr)
@@ -263,8 +394,11 @@ def build_parser() -> argparse.ArgumentParser:
     focus_parser.add_argument("text")
     focus_parser.set_defaults(func=focus)
 
-    metric_parser = subparsers.add_parser("metric", help="Record or update a metric")
-    metric_parser.add_argument("scope")
+    metric_parser = subparsers.add_parser(
+        "metric",
+        help="Record or update a metric (appends to its history)",
+    )
+    metric_parser.add_argument("scope", help="Task id this metric belongs to")
     metric_parser.add_argument("name")
     metric_parser.add_argument("value")
     metric_parser.add_argument("--label")
@@ -280,6 +414,21 @@ def build_parser() -> argparse.ArgumentParser:
     query_parser = subparsers.add_parser("query", help="Print state JSON if a term appears in it")
     query_parser.add_argument("term")
     query_parser.set_defaults(func=query)
+
+    review_parser = subparsers.add_parser(
+        "review",
+        help="Classify each track's latest metric trend (continue/switch/stop aid)",
+    )
+    review_parser.add_argument(
+        "--threshold",
+        type=float,
+        default=DEFAULT_TREND_THRESHOLD,
+        help=(
+            f"Relative delta magnitude below which a metric counts as stagnant "
+            f"(default {DEFAULT_TREND_THRESHOLD})"
+        ),
+    )
+    review_parser.set_defaults(func=review)
 
     return parser
 

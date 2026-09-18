@@ -82,6 +82,6 @@ Example config: `dighum_template/packages/workflow_mcp/examples/iteration.toml` 
 
 ## Related
 
-- Wisdom: [cost-sensitive-agent-workflow](../../wisdom/cost-sensitive-agent-workflow.md), [iteration-decision-framework](../../wisdom/iteration-decision-framework.md) (after `--with-wisdom`)
+- Wisdom: [cost-sensitive-agent-workflow](../../wisdom/cost-sensitive-agent-workflow.md), [iteration-decision-framework](../../wisdom/iteration-decision-framework.md), [iteration-policy](../../wisdom/iteration-policy.md) (after `--with-wisdom`)
 - Package: `dighum_template/packages/workflow_mcp/README.md`
 - Sync from dighum: `~/develop/dighum_template/scripts/sync_project.sh <project> --addon workflow-mcp --mcp` — [SYNC-PROJECT.md](https://github.com/HoekR/dighum_template/blob/main/docs/SYNC-PROJECT.md)

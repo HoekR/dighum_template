@@ -74,5 +74,50 @@ def test_decision_append(tmp_path: Path) -> None:
     assert "Use tolerance t=2." in decisions
 
 
-def test_template_script_compiles() -> None:
-    subprocess.run([sys.executable, "-m", "py_compile", str(SVZ_SCRIPT)], check=True)
+def test_metric_history_and_review(tmp_path: Path) -> None:
+    project = seed_project(tmp_path)
+    run_svz(project, "update", "S1", "inprogress", "--title", "Diagnostics")
+    run_svz(project, "metric", "S1", "f1", "0.50", "--label", "F1")
+    # Second day: bump date by writing history directly then recording again is hard;
+    # record twice same day overwrites — so seed a prior history point.
+    state_path = project / "docs" / "state.json"
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    for metric_entry in state["metrics"]:
+        if metric_entry.get("name") == "f1":
+            metric_entry["history"] = [
+                {"date": "2026-01-01", "value": "0.50"},
+                {"date": "2026-01-02", "value": "0.60"},
+            ]
+            metric_entry["value"] = "0.60"
+    state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+
+    review = run_svz(project, "review")
+    assert "Active tracks needing a decision" in review.stdout
+    assert "S1" in review.stdout
+    assert "improving" in review.stdout
+
+    # Stagnant flag
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    for metric_entry in state["metrics"]:
+        if metric_entry.get("name") == "f1":
+            metric_entry["history"] = [
+                {"date": "2026-01-01", "value": "0.60"},
+                {"date": "2026-01-02", "value": "0.601"},
+            ]
+            metric_entry["value"] = "0.601"
+    state_path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    review2 = run_svz(project, "review")
+    assert "stagnant" in review2.stdout
+    assert "cutoff candidate" in review2.stdout
+
+
+def test_metric_appends_history(tmp_path: Path) -> None:
+    project = seed_project(tmp_path)
+    run_svz(project, "metric", "S0", "acc", "0.1", "--label", "Acc")
+    state = json.loads((project / "docs" / "state.json").read_text(encoding="utf-8"))
+    assert len(state["metrics"][0]["history"]) == 1
+    run_svz(project, "metric", "S0", "acc", "0.2")
+    state = json.loads((project / "docs" / "state.json").read_text(encoding="utf-8"))
+    # Same calendar day → overwrite last point
+    assert len(state["metrics"][0]["history"]) == 1
+    assert state["metrics"][0]["value"] == "0.2"

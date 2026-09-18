@@ -20,6 +20,7 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | [workflow-mcp](topics/workflow-mcp.md) | Cursor MCP for PLAN.md progress and plans/steps guides |
 | [cost-sensitive-agent-workflow](topics/cost-sensitive-agent-workflow.md) | Step-by-step plans, doc split, user-run terminal, model tiers |
 | [iteration-decision-framework](topics/iteration-decision-framework.md) | Stage gates, attempt budgets, interlocks; orchestrator advise/record |
+| [iteration-policy](topics/iteration-policy.md) | Track choice via `svz review`; compose with orchestrator concerns |
 | [macos-batch-execution-power](topics/macos-batch-execution-power.md) | Prevent macOS E-core downclocking & SSD sleep via `caffeinate -dims` |
 | [llm-pipeline-batching-strategy](topics/llm-pipeline-batching-strategy.md) | Staged batching (Step A dropout $\rightarrow$ SLM filter $\rightarrow$ HPC scale) |
 
@@ -27,7 +28,7 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 
 | Month | Notes |
 |-------|-------|
-| [2026-09](journal/2026-09.md) | Iteration decision framework + workflow-mcp orchestrator |
+| [2026-09](journal/2026-09.md) | Iteration framework + svz review / track policy |
 | [2026-08](journal/2026-08.md) | Cost-sensitive agent workflow (wvo_corr pilot) |
 | [2026-06](journal/2026-06.md) | Template repo, addons, wisdom layer |
 
@@ -37,6 +38,6 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 |------|------------|
 | Any new DH repo | manifest-discipline, provenance-fields, archivist-vs-data-io, data-io-mcp |
 | Existing derivative (dighum updates) | dighum `docs/SYNC-PROJECT.md` + `sync_project.sh` |
-| Multi-step / Bayesian / pub pipeline | cost-sensitive-agent-workflow, workflow-mcp, iteration-decision-framework |
+| Multi-step / Bayesian / pub pipeline | cost-sensitive-agent-workflow, workflow-mcp, iteration-decision-framework, iteration-policy |
 | Republic attendance / RPP | pattern-authority, pandas-pre-1678-dates, observable-framework-bridge |
 | LLM annotation | vectorized-pandas + addon `trifecta` |

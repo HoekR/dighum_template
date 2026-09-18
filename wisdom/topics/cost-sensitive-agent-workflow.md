@@ -117,7 +117,9 @@ After bootstrap with `--with-wisdom`, this topic copies to `docs/wisdom/`.
 
 ### Iteration gates (beside PLAN)
 
-When the same concern keeps failing (metrics, specs, label style, tooling), do **not** burn another pass by default. Load `plans/iteration.toml` (if present) and call workflow-mcp `get_iteration_advice(concern_id)` or CLI `workflow-orchestrator advise`. Verdicts: continue / escalate upstream / defer / change success criteria / ask human. See [iteration-decision-framework](iteration-decision-framework.md).
+When several **tracks** compete, start with `uv run python scripts/svz.py review` ([iteration-policy](iteration-policy.md)).
+
+When the same **concern** keeps failing (metrics, specs, label style, tooling), do **not** burn another pass by default. Load `plans/iteration.toml` (if present) and call workflow-mcp `get_iteration_advice(concern_id)` or CLI `workflow-orchestrator advise`. Verdicts: continue / escalate upstream / defer / change success criteria / ask human. See [iteration-decision-framework](iteration-decision-framework.md).
 
 ## Why
 

@@ -48,5 +48,6 @@ Agents load entire plans, skip step boundaries, and run multi-step shell loops. 
 
 - [cost-sensitive-agent-workflow](cost-sensitive-agent-workflow.md)
 - [iteration-decision-framework](iteration-decision-framework.md)
+- [iteration-policy](iteration-policy.md) — `svz review` (tracks) vs orchestrator concerns
 - [data-io-mcp](data-io-mcp.md)
 - Package: `packages/workflow_mcp/README.md`

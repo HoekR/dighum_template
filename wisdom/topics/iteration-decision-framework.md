@@ -3,7 +3,7 @@
 **Status:** stable (v1)  
 **Applies to:** multi-step DH pipelines with iterative loops (eval, specs, gold/labels, prompts, figures)  
 **Portable:** yes  
-**Companion:** [cost-sensitive-agent-workflow](cost-sensitive-agent-workflow.md), [workflow-mcp](workflow-mcp.md)
+**Companion:** [iteration-policy](iteration-policy.md), [cost-sensitive-agent-workflow](cost-sensitive-agent-workflow.md), [workflow-mcp](workflow-mcp.md)
 
 ## Rule
 
@@ -105,9 +105,17 @@ On `ask_human` / `escalate_upstream`, the CLI may suggest a `svz decision …` l
 | Tool | Role |
 |------|------|
 | `PLAN.md` + `plans/steps/` | Human progress authority; one step per chat |
-| workflow-mcp | Read plan/step; iteration advice |
+| **`svz.py review`** | Which **track** next (metric trends) — see [iteration-policy](iteration-policy.md) |
+| workflow-mcp / orchestrator | Within a track: stage gates, budgets, interlocks on a **concern** |
 | plan-step-executor | One bounded PLAN step; call advice before retrying same concern |
-| `svz.py` | Optional decision log — not replaced |
+| `svz.py metric` / `decision` | Evidence history + durable stop/continue |
+
+Session shape:
+
+1. `uv run python scripts/svz.py review`
+2. Pick a track (or PLAN step).
+3. If polishing the same concern: `workflow-orchestrator advise --concern …`
+4. After the pass: `record` attempt and/or `svz.py metric <track> …`
 
 ## Anti-patterns
 

@@ -84,6 +84,10 @@ Server code stays in dighum (not vendored). Sync MCP deps + refresh add-on overl
 ./scripts/sync_project.sh ~/develop/my-project --mcp --addon workflow-mcp
 ```
 
+### Iteration policy (tracks + concerns)
+
+Canonical checklist: [wisdom/topics/iteration-policy.md](../wisdom/topics/iteration-policy.md) → **Install in any existing repo** (`--state --wisdom`, optional `plans/iteration.toml`, optional `--mcp --addon workflow-mcp`).
+
 ### With archivist installed
 
 `sync_project.sh` does not sync `llm_archivist/` yet. Manual:
