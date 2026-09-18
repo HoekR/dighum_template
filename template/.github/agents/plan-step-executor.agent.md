@@ -29,10 +29,13 @@ You execute one bounded project-plan step per chat.
 - Do not broaden into repository mapping, unrelated refactors, or speculative pipeline redesign.
 - Do not silently mark work complete.
 - Preserve existing user changes and canonical data; use manifest-backed, provenance-aware output paths when the project requires them.
+- If `plans/iteration.toml` exists and you are about to retry the **same** iterative concern (metric, few-shot, prompt polish), call workflow-MCP `get_iteration_advice(concern_id)` first. If the verdict is not `continue`, stop and report that verdict — do not burn another pass.
 
 ## Blockers
 
 If the selected step is blocked, report the failed command or evidence, the smallest next decision needed, and any safe partial result. Update project status only when the project convention calls for it, then stop.
+
+If blocked by an iteration **stage gate** or **attempt budget**, report the orchestrator verdict (`escalate_upstream`, `defer`, `change_success_criteria`, or `ask_human`) and stop. Do not start another identical pass.
 
 ## Completion report
 

@@ -111,8 +111,13 @@ Keep on a **strong** model: first PyMC spec for a phase, incipit/join edge cases
 | Workflow MCP | [workflow-mcp](workflow-mcp.md) |
 | MCP servers (shared) | Optional sibling [dighum_template](https://github.com/HoekR/dighum_template) — not vendored |
 | This workflow | **cost-sensitive-agent-workflow** (this file) |
+| Premature / interlocked iteration | [iteration-decision-framework](iteration-decision-framework.md) — `plans/iteration.toml` + orchestrator |
 
 After bootstrap with `--with-wisdom`, this topic copies to `docs/wisdom/`.
+
+### Iteration gates (beside PLAN)
+
+When the same concern keeps failing (metrics, specs, label style, tooling), do **not** burn another pass by default. Load `plans/iteration.toml` (if present) and call workflow-mcp `get_iteration_advice(concern_id)` or CLI `workflow-orchestrator advise`. Verdicts: continue / escalate upstream / defer / change success criteria / ask human. See [iteration-decision-framework](iteration-decision-framework.md).
 
 ## Why
 

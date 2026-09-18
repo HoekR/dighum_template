@@ -1,0 +1,78 @@
+# Example iteration.toml (generic multi-step DH pipeline)
+# Copy to a project as plans/iteration.toml and edit facts/concerns/stages.
+# Schema: wisdom/topics/iteration-decision-framework.md
+#
+# Stages below are illustrative — rename freely for Bayesian, annotation,
+# corpus prep, publication, etc.
+
+[meta]
+version = 1
+description = "Explore → freeze inputs → calibrate method → publish slice"
+
+[facts]
+inputs_registered = true
+eval_harness_ready = true
+method_spec_reviewed = false
+export_contract_defined = false
+
+[[stages]]
+id = "inputs_ready"
+done_when = "Manifest datasets resolve; data_io.check passes"
+requires_facts = ["inputs_registered"]
+requires_stages = []
+
+[[stages]]
+id = "baseline_eval"
+done_when = "First eval/report on a frozen slice exists"
+requires_facts = ["eval_harness_ready"]
+requires_stages = ["inputs_ready"]
+
+[[stages]]
+id = "method_calibrate"
+done_when = "Method/spec or prompts stable enough for a second eval pass"
+requires_facts = ["eval_harness_ready"]
+requires_stages = ["baseline_eval"]
+
+[[stages]]
+id = "publish_slice"
+done_when = "Bounded export or figure set published with provenance"
+requires_facts = ["export_contract_defined"]
+requires_stages = ["method_calibrate"]
+
+[[concerns]]
+id = "metric_chase"
+stage = "method_calibrate"
+max_attempts = 3
+escalate_to = "change_success_criteria"
+done_when = "Success metric agreed (or softened) — stop polishing the same number"
+
+[[concerns]]
+id = "spec_tweaks"
+stage = "method_calibrate"
+max_attempts = 2
+escalate_to = "ask_human"
+done_when = "Method/spec change reviewed; re-eval once"
+
+[[concerns]]
+id = "label_style"
+stage = "inputs_ready"
+max_attempts = 2
+escalate_to = "escalate_upstream"
+done_when = "Labelling / coding style agreed before growing the set"
+
+[[concerns]]
+id = "eval_strictness"
+stage = "baseline_eval"
+max_attempts = 2
+escalate_to = "change_success_criteria"
+done_when = "Strict vs soft scoring (or pass/fail bar) chosen"
+
+[[interlocks]]
+a = "label_style"
+b = "eval_strictness"
+blocking = true
+
+[[interlocks]]
+a = "metric_chase"
+b = "spec_tweaks"
+blocking = false

@@ -56,11 +56,12 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 
 ## Session workflow
 
-1. Read `PLAN.md` for current phase and outputs.
-2. Multi-step projects: create `plans/steps/STEP*.md` when needed — see wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md) (user runs terminal by default).
-3. Update `PLAN.md` data-path table when manifest datasets change.
-3. (Recommended) Run `uv run python -m data_io.check` to view the manifest-backed data registry state before you start new work.
-4. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
+1. One active step per session — never “execute the whole plan”.
+2. Read `PLAN.md` first; if multi-step, follow `plans/steps/STEP*.md` (see wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md)). Prefer advising commands; user runs the terminal by default.
+3. Update `PLAN.md` when a step is done (checklist) and when manifest datasets change.
+4. After a step: short handoff + next step; clear the chat before starting the next step.
+5. (Recommended) `uv run python -m data_io.check` before new pipeline work.
+6. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
 
 ## Editors (Cursor, VS Code, Claude Code)
 

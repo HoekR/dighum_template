@@ -1,2 +1,3 @@
 [console_scripts]
 workflow-mcp = workflow_mcp.server:main
+workflow-orchestrator = workflow_mcp.cli_orchestrator:main

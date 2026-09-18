@@ -29,7 +29,8 @@ mcp = FastMCP(
     instructions=(
         "Cost-sensitive step-by-step workflow for DH pipeline projects. "
         "Read PLAN.md progress and plans/steps guides — one step per chat; "
-        "never execute the whole plan in one session."
+        "never execute the whole plan in one session. "
+        "Before retrying the same iterative concern, call get_iteration_advice."
     ),
 )
 
@@ -64,10 +65,61 @@ def get_workflow_rules() -> dict[str, Any]:
     return read_workflow_rules(_root())
 
 
-# In je server Python script:
+@mcp.tool
+def get_iteration_config() -> dict[str, Any]:
+    """
+    Return effective plans/iteration.toml (stages, concerns, interlocks, facts).
+
+    Does not modify PLAN.md. Missing config → error payload with copy hint.
+    """
+    from workflow_mcp.orchestrator import load_iteration_config
+
+    try:
+        return {"success": True, "config": load_iteration_config(_root()).to_public_dict()}
+    except FileNotFoundError as exc:
+        return {"success": False, "error": str(exc)}
+
 
 @mcp.tool
-def mark_step_status(step_id: str, completed: bool = True) -> dict[str, Any]:
+def get_iteration_advice(concern_id: str, note: str = "") -> dict[str, Any]:
+    """
+    Advise whether to keep iterating on a named concern (stage gates, budgets, interlocks).
+
+    Verdicts: continue | escalate_upstream | defer | change_success_criteria | ask_human.
+    Does not tick PLAN.md. Call before retrying the same concern.
+    """
+    from workflow_mcp.orchestrator import advise
+
+    try:
+        advice = advise(_root(), concern_id, note=note or None)
+    except FileNotFoundError as exc:
+        return {"success": False, "error": str(exc)}
+    payload = advice.to_dict()
+    payload["success"] = True
+    return payload
+
+
+@mcp.tool
+def record_iteration_attempt(
+    concern_id: str,
+    outcome: str,
+    note: str = "",
+) -> dict[str, Any]:
+    """
+    Append one attempt to plans/iteration_log.jsonl (outcome e.g. no_gain, improved).
+
+    Does not tick PLAN.md. Use after a focused pass so budgets stay accurate.
+    """
+    from workflow_mcp.orchestrator import record_attempt
+
+    try:
+        return record_attempt(_root(), concern_id, outcome=outcome, note=note)
+    except Exception as exc:  # noqa: BLE001
+        return {"success": False, "error": str(exc)}
+
+
+# Optional PLAN write tools (human ticks remain authoritative; prefer human edits).
+# Orchestrator tools above never write PLAN.md.
     """
     Update the status of a specific step in PLAN.md (e.g. step_id='2', completed=True).
     Flips [ ] to [x] or vice versa.
@@ -98,6 +150,28 @@ def update_plan_notes(step_id: str, note: str) -> dict[str, Any]:
 
     if updated:
         return {"success": True, "message": f"Notes for step {step_id} updated."}
+    return {"success": False, "error": f"Step {step_id} not found in PLAN.md."}
+
+@mcp.tool
+def mark_step_complete(step_id: str) -> dict[str, Any]:
+    """Mark a specific step as complete (change [ ] to [x]) in PLAN.md."""
+    root = _root()
+    plan_path = root / "PLAN.md"
+    
+    if not plan_path.exists():
+        return {"success": False, "error": "PLAN.md not found."}
+
+    content = plan_path.read_text(encoding="utf-8")
+    
+    # Find the specific step in the table or list and update the checkbox
+    import re
+    pattern = rf"(\|-?\s*\[)\s*(\]\s*\|\s*{re.escape(step_id)}\b)"
+    
+    if re.search(pattern, content):
+        new_content = re.sub(pattern, r"\1x\2", content)
+        plan_path.write_text(new_content, encoding="utf-8")
+        return {"success": True, "message": f"Step {step_id} marked as complete in PLAN.md."}
+    
     return {"success": False, "error": f"Step {step_id} not found in PLAN.md."}
 
 
