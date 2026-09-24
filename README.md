@@ -109,6 +109,7 @@ test -f "$TMP/test/.github/agents/plan-step-executor.agent.md"
 
 | Project | Notes |
 |---------|-------|
+| [dighum_demo](../dighum_demo) | Short capability demo (bootstrap + sample PLAN; no MCP) — see its `DEMO.md` |
 | [gnb_analysis](../gnb_analysis) | RPP pipeline — use `--addon rpp` as starting point |
 | [trifecta-annotation](../trifecta-annotation) | TRIFECTA — use `--addon trifecta` |
 | [republic_ner_matching](../republic_ner_matching) | NER matching; `data_io` development source |
