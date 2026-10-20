@@ -67,9 +67,12 @@ def main(argv: list[str] | None = None) -> None:
     )
     overview_parser.add_argument("logical_name")
 
-    subparsers.add_parser(
+    sync_parser = subparsers.add_parser(
         "sync-mirrors",
         help="Refresh every `mirror_of` dataset from its live source, then `dvc add` changes.",
+    )
+    sync_parser.add_argument(
+        "--push", action="store_true", help="Also run `dvc push` after re-adding changed mirrors."
     )
     args = parser.parse_args(argv)
 
@@ -92,6 +95,8 @@ def main(argv: list[str] | None = None) -> None:
 
         paths = [str(manager.resolve(name)) for name in changed]
         subprocess.run(["dvc", "add", *paths], check=True)
+        if args.push:
+            subprocess.run(["dvc", "push"], check=True)
         sys.exit(0)
 
     sys.exit(run_check())
