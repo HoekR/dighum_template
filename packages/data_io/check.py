@@ -60,7 +60,40 @@ def run_check(manager: DataManager | None = None) -> int:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Verify data manifest tiers and dataset paths.")
-    parser.parse_args(argv)
+    subparsers = parser.add_subparsers(dest="command")
+
+    overview_parser = subparsers.add_parser(
+        "overview", help="Print the lineage chain + staleness status for one dataset."
+    )
+    overview_parser.add_argument("logical_name")
+
+    subparsers.add_parser(
+        "sync-mirrors",
+        help="Refresh every `mirror_of` dataset from its live source, then `dvc add` changes.",
+    )
+    args = parser.parse_args(argv)
+
+    if args.command == "overview":
+        from data_io.lineage import overview as _overview
+
+        print(_overview(args.logical_name))
+        sys.exit(0)
+
+    if args.command == "sync-mirrors":
+        from data_io.lineage import sync_mirrors
+
+        manager = DataManager()
+        changed = sync_mirrors(manager)
+        if not changed:
+            print("No mirrors changed.")
+            sys.exit(0)
+        print(f"Changed: {', '.join(changed)}")
+        import subprocess
+
+        paths = [str(manager.resolve(name)) for name in changed]
+        subprocess.run(["dvc", "add", *paths], check=True)
+        sys.exit(0)
+
     sys.exit(run_check())
 
 

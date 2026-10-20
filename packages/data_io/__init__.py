@@ -10,6 +10,7 @@ from data_io.manifest import (
     get_manager,
     resolve,
 )
+from data_io.lineage import append_lineage_log, check_staleness, overview, sync_mirrors
 from data_io.parquet_io import load_parquet, save_parquet
 from data_io.provenance import ProvenanceRecord
 
@@ -18,16 +19,20 @@ __all__ = [
     "DatasetNotFoundError",
     "ProvenanceRecord",
     "TierUnavailableError",
+    "append_lineage_log",
+    "check_staleness",
     "find_manifest_path",
     "get_manager",
     "load",
     "load_jsonl",
     "load_parquet",
+    "overview",
     "resolve",
     "run_check",
     "save_jsonl",
     "save_parquet",
     "save_semi_structured",
+    "sync_mirrors",
 ]
 
 
