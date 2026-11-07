@@ -19,6 +19,9 @@ Read `AGENTS.md`, `docs/DATA.md`, and `PLAN.md` before pipeline work.
 ## Workflow
 
 - One active step per session — never implement the whole `PLAN.md` at once
+- If Living Project State is present: run `uv run python scripts/svz.py gate` before a step / eval loop / question change; on FAIL patch `docs/claims.jsonl` first (see wisdom `claims-and-eval-gate`)
+- New question → new claim id; wrong track → `claim close --status dead_for_this_q` (keep history); exploration in notebooks only — not ship authority
+- Eval: separate Process vs Product verdicts; grid finished ≠ quality pass
 - Read `PLAN.md` first; if a guide exists under `plans/steps/STEP*.md`, follow it before editing files
 - Prefer advising commands; do not run heavy compute (sampling, long builds) by default — user runs the terminal
 - Do not scan or dump large parts of the repo unless asked

@@ -57,11 +57,19 @@ uv run archive-scan /path/to/folder --model qwen2.5-coder:latest
 ## Session workflow
 
 1. One active step per session — never “execute the whole plan”.
-2. Read `PLAN.md` first; if multi-step, follow `plans/steps/STEP*.md` (see wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md)). Prefer advising commands; user runs the terminal by default.
-3. Update `PLAN.md` when a step is done (checklist) and when manifest datasets change.
-4. After a step: short handoff + next step; clear the chat before starting the next step.
-5. (Recommended) `uv run python -m data_io.check` before new pipeline work.
-6. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
+2. **Claims gate (when Living Project State / `svz` is present):** before a PLAN step, eval loop, or changing the research question, run `uv run python scripts/svz.py gate`. On FAIL, stop and patch claims (`claim open|close`) — do not reinterpret quietly under the same id. See wisdom [claims-and-eval-gate](../../wisdom/topics/claims-and-eval-gate.md).
+3. Read `PLAN.md` first; if multi-step, follow `plans/steps/STEP*.md` (see wisdom [cost-sensitive-agent-workflow](../../wisdom/topics/cost-sensitive-agent-workflow.md)). Prefer advising commands; user runs the terminal by default.
+4. Update `PLAN.md` when a step is done (checklist) and when manifest datasets change. Keep PLAN as **headlines only** — outcomes and wrong-track kills live in `docs/claims.jsonl`, not chat.
+5. After a step: short handoff + next step; clear the chat before starting the next step.
+6. (Recommended) `uv run python -m data_io.check` before new pipeline work.
+7. Smoke test: `uv run python -c "from data_io import resolve; print(resolve('...'))"`
+
+## Claims, eval, and exploration (strict when `svz` is present)
+
+- **New research question → new claim id** (`svz.py claim open …`). Same id may only continue under an explicit `interpretation_id` bump; never silent narrative drift.
+- **Wrong track:** `claim close --status dead_for_this_q` (or `deferred`) with `--evidence` and `--consequence`; optionally `--clear-active`. Do not delete history. Gate failing after a kill is correct until the next claim exists.
+- **Exploration** stays in **notebooks** (heatmaps, distributions, sequence graphs). Notebooks and “grid finished” are **not** ship/placement authority.
+- Eval reports need **two verdicts:** Process (ops/reproducible run) vs Product (pre-registered quality threshold on a named stratum). Never treat Process green as Product permission.
 
 ## Editors (Cursor, VS Code, Claude Code)
 

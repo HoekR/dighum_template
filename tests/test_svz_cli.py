@@ -121,3 +121,100 @@ def test_metric_appends_history(tmp_path: Path) -> None:
     # Same calendar day → overwrite last point
     assert len(state["metrics"][0]["history"]) == 1
     assert state["metrics"][0]["value"] == "0.2"
+
+
+def run_svz_unchecked(project: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(project / "scripts" / "svz.py"), *args],
+        cwd=project,
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+
+
+def test_claims_gate_open_close(tmp_path: Path) -> None:
+    project = seed_project(tmp_path)
+    fail = run_svz_unchecked(project, "gate")
+    assert fail.returncode != 0
+    assert "FAIL" in fail.stderr
+
+    run_svz(
+        project,
+        "claim",
+        "open",
+        "demo-claim",
+        "--question",
+        "Does channel X beat baseline on stratum B?",
+        "--consequence",
+        "If no, stop auto-write; if yes, wire assist key",
+        "--sync-focus",
+    )
+    gate = run_svz(project, "gate")
+    assert "PASS" in gate.stdout
+
+    state = json.loads((project / "docs" / "state.json").read_text(encoding="utf-8"))
+    assert state["active_claim_id"] == "demo-claim"
+    rendered = (project / "docs" / "STATE.md").read_text(encoding="utf-8")
+    assert "## Active Claim" in rendered
+    assert "demo-claim" in rendered
+
+    run_svz(
+        project,
+        "claim",
+        "close",
+        "demo-claim",
+        "--status",
+        "dead_for_this_q",
+        "--evidence",
+        "output/demo_report.md",
+        "--consequence",
+        "Wrong track; do not expand grid",
+        "--clear-active",
+    )
+    fail2 = run_svz_unchecked(project, "gate")
+    assert fail2.returncode != 0
+    claims = (project / "docs" / "claims.jsonl").read_text(encoding="utf-8")
+    assert "dead_for_this_q" in claims
+    assert "output/demo_report.md" in claims
+
+
+def test_claim_supersedes_and_list(tmp_path: Path) -> None:
+    project = seed_project(tmp_path)
+    run_svz(
+        project,
+        "claim",
+        "open",
+        "old-q",
+        "--question",
+        "Old question",
+        "--consequence",
+        "Old consequence",
+    )
+    run_svz(
+        project,
+        "claim",
+        "close",
+        "--status",
+        "deferred",
+        "--evidence",
+        "output/old.md",
+        "--clear-active",
+    )
+    run_svz(
+        project,
+        "claim",
+        "open",
+        "new-q",
+        "--question",
+        "New question",
+        "--consequence",
+        "New consequence",
+        "--supersedes",
+        "old-q",
+    )
+    listed = run_svz(project, "claim", "list")
+    assert "old-q" in listed.stdout
+    assert "* new-q" in listed.stdout
+    doctor = run_svz(project, "doctor")
+    assert "Claims gate: PASS" in doctor.stdout

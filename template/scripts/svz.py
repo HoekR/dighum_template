@@ -4,6 +4,10 @@
 The machine source of truth is docs/state.json. docs/STATE.md is rendered from
 that file so AI agents and humans can read a compact, visual dashboard.
 
+Claims (docs/claims.jsonl) hold research conclusions in a tiny schema.
+``svz.py gate`` is the bookkeeping gatekeeper: no active claim with question +
+consequence → refuse to continue (agents must patch claims first).
+
 `review` supports the continue/switch/stop discipline in
 docs/wisdom/iteration-policy.md (or the project's copy): it classifies each
 track's latest recorded metric delta (improving / stagnant / regressing) so a
@@ -11,7 +15,8 @@ session can start by asking "which track has the clearest next gain" instead of
 resuming whatever was last open.
 
 Compose with workflow-mcp iteration orchestrator (plans/iteration.toml) for
-within-track polish gates — see wisdom iteration-decision-framework.
+within-track polish gates — see wisdom iteration-decision-framework and
+claims-and-eval-gate.
 """
 
 from __future__ import annotations
@@ -28,8 +33,11 @@ from typing import Any
 STATE_JSON = Path("docs/state.json")
 STATE_MD = Path("docs/STATE.md")
 DECISIONS_MD = Path("docs/DECISIONS.md")
+CLAIMS_JSONL = Path("docs/claims.jsonl")
 MANUAL_MARKER = "<!-- Manual notes below this line are preserved by scripts/svz.py render. -->"
 VALID_STATUSES = {"todo", "inprogress", "done", "blocked"}
+VALID_CLAIM_STATUSES = {"open", "deferred", "answered", "dead_for_this_q"}
+CLOSED_CLAIM_STATUSES = {"deferred", "answered", "dead_for_this_q"}
 DEFAULT_TREND_THRESHOLD = 0.03
 
 
@@ -50,6 +58,82 @@ def load_state() -> dict[str, Any]:
 def save_state(state: dict[str, Any]) -> None:
     state["last_updated"] = now_stamp()
     STATE_JSON.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def load_claims() -> dict[str, dict[str, Any]]:
+    """Return claim id → latest record (jsonl rewritten as upserted map)."""
+    if not CLAIMS_JSONL.exists():
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for line_no, line in enumerate(CLAIMS_JSONL.read_text(encoding="utf-8").splitlines(), start=1):
+        text = line.strip()
+        if not text or text.startswith("#"):
+            continue
+        try:
+            row = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"Invalid JSON on {CLAIMS_JSONL}:{line_no}: {exc}") from exc
+        claim_id = str(row.get("id") or "").strip()
+        if not claim_id:
+            raise SystemExit(f"Missing claim id on {CLAIMS_JSONL}:{line_no}")
+        out[claim_id] = row
+    return out
+
+
+def save_claims(claims: dict[str, dict[str, Any]]) -> None:
+    CLAIMS_JSONL.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        json.dumps(claims[key], ensure_ascii=False, sort_keys=True)
+        for key in sorted(claims)
+    ]
+    CLAIMS_JSONL.write_text(("\n".join(lines) + ("\n" if lines else "")), encoding="utf-8")
+
+
+def validate_claim_record(claim: dict[str, Any], *, require_closed_evidence: bool) -> list[str]:
+    problems: list[str] = []
+    claim_id = str(claim.get("id") or "").strip()
+    if not claim_id:
+        problems.append("claim missing id")
+    status = str(claim.get("status") or "").strip()
+    if status not in VALID_CLAIM_STATUSES:
+        problems.append(f"claim {claim_id!r} has invalid status {status!r}")
+    if not str(claim.get("question") or "").strip():
+        problems.append(f"claim {claim_id!r} missing question")
+    if not str(claim.get("consequence") or "").strip():
+        problems.append(f"claim {claim_id!r} missing consequence")
+    if require_closed_evidence and status in CLOSED_CLAIM_STATUSES:
+        if not str(claim.get("evidence") or "").strip():
+            problems.append(f"claim {claim_id!r} status {status} requires evidence path")
+    return problems
+
+
+def gate_check(state: dict[str, Any] | None = None) -> tuple[bool, list[str], dict[str, Any] | None]:
+    """Return (ok, problems, active_claim)."""
+    state = state if state is not None else load_state()
+    claims = load_claims()
+    active_id = str(state.get("active_claim_id") or "").strip()
+    if not active_id:
+        return (
+            False,
+            [
+                "No active_claim_id. Open one: "
+                "uv run python scripts/svz.py claim open <id> "
+                '--question "..." --consequence "..."'
+            ],
+            None,
+        )
+    claim = claims.get(active_id)
+    if claim is None:
+        return (
+            False,
+            [
+                f"active_claim_id={active_id!r} not in {CLAIMS_JSONL}. "
+                "Fix id or open the claim."
+            ],
+            None,
+        )
+    problems = validate_claim_record(claim, require_closed_evidence=True)
+    return (not problems, problems, claim)
 
 
 def task_symbol(status: str) -> str:
@@ -124,6 +208,47 @@ def preserved_notes() -> str:
     return content.split(MANUAL_MARKER, 1)[1].lstrip()
 
 
+def render_active_claim_section(state: dict[str, Any]) -> list[str]:
+    lines = ["## Active Claim", ""]
+    active_id = str(state.get("active_claim_id") or "").strip()
+    if not active_id:
+        lines.extend(
+            [
+                "_No active claim._ Run "
+                "`uv run python scripts/svz.py claim open <id> --question \"...\" "
+                "--consequence \"...\"` then `svz.py gate`.",
+                "",
+            ]
+        )
+        return lines
+    claims = load_claims()
+    claim = claims.get(active_id)
+    if claim is None:
+        lines.extend(
+            [
+                f"**Broken pointer:** `active_claim_id={active_id}` missing from `{CLAIMS_JSONL}`.",
+                "",
+            ]
+        )
+        return lines
+    lines.extend(
+        [
+            f"- **id:** `{claim.get('id')}`",
+            f"- **status:** `{claim.get('status')}`",
+            f"- **question:** {claim.get('question')}",
+            f"- **consequence:** {claim.get('consequence')}",
+        ]
+    )
+    if claim.get("evidence"):
+        lines.append(f"- **evidence:** `{claim.get('evidence')}`")
+    if claim.get("supersedes"):
+        lines.append(f"- **supersedes:** `{claim.get('supersedes')}`")
+    if claim.get("interpretation_id"):
+        lines.append(f"- **interpretation_id:** `{claim.get('interpretation_id')}`")
+    lines.append("")
+    return lines
+
+
 def render_markdown(state: dict[str, Any]) -> str:
     tasks = state.get("tasks", [])
     metrics = state.get("metrics", [])
@@ -171,6 +296,7 @@ def render_markdown(state: dict[str, Any]) -> str:
         lines.append("No tasks recorded yet.")
 
     lines.extend(["", "## Active Focus", "", str(state.get("active_focus") or "No active focus recorded."), ""])
+    lines.extend(render_active_claim_section(state))
     lines.extend(["## Key Intermediate Results & Metrics", ""])
     if metrics:
         for metric_entry in metrics:
@@ -211,6 +337,7 @@ def status(_: argparse.Namespace) -> None:
     print(f"Project: {state.get('project', 'unknown')}")
     print(f"Last updated: {state.get('last_updated') or 'not set'}")
     print(f"Active focus: {state.get('active_focus') or 'none'}")
+    print(f"Active claim: {state.get('active_claim_id') or 'none'}")
     print("\nTasks:")
     for task in state.get("tasks", []):
         print(f"  [{task_symbol(str(task.get('status', 'todo')))}] {task.get('id')}: {task.get('title')}")
@@ -345,9 +472,10 @@ def review(args: argparse.Namespace) -> None:
         print(f"- [{task.get('status')}] {task.get('id')}: {task.get('title')}{note}")
 
     print(
-        "\nSee docs/wisdom/iteration-policy.md (or dighum_template wisdom) before "
-        "switching tracks or recording a cutoff (`svz.py decision ...`). "
-        "Within a track, use workflow-orchestrator advise if plans/iteration.toml exists."
+        "\nSee docs/wisdom/iteration-policy.md and claims-and-eval-gate.md before "
+        "switching tracks or recording a cutoff (`svz.py decision ...` / `claim close`). "
+        "Within a track, use workflow-orchestrator advise if plans/iteration.toml exists. "
+        "Run `svz.py gate` before continuing work."
     )
 
 
@@ -368,11 +496,154 @@ def doctor(_: argparse.Namespace) -> None:
                 f"Metric {metric_entry.get('name')!r} has scope {metric_entry.get('scope')!r} "
                 "that does not match any task id (or <task_id>-<subid> pattern)"
             )
+
+    claims = load_claims()
+    for claim in claims.values():
+        problems.extend(validate_claim_record(claim, require_closed_evidence=True))
+    active_id = str(state.get("active_claim_id") or "").strip()
+    if active_id and active_id not in claims:
+        problems.append(f"active_claim_id={active_id!r} missing from {CLAIMS_JSONL}")
+
     if problems:
         for problem in problems:
             print(f"ERROR: {problem}", file=sys.stderr)
         raise SystemExit(1)
     print("SvZ state looks valid")
+    ok, gate_problems, _ = gate_check(state)
+    if ok:
+        print("Claims gate: PASS")
+    else:
+        print("Claims gate: FAIL (informational — use `svz.py gate` to enforce)")
+        for problem in gate_problems:
+            print(f"  - {problem}")
+
+
+def gate(_: argparse.Namespace) -> None:
+    ok, problems, claim = gate_check()
+    if not ok:
+        print("Claims gate: FAIL", file=sys.stderr)
+        for problem in problems:
+            print(f"ERROR: {problem}", file=sys.stderr)
+        raise SystemExit(1)
+    assert claim is not None
+    print("Claims gate: PASS")
+    print(f"  id: {claim.get('id')}")
+    print(f"  status: {claim.get('status')}")
+    print(f"  question: {claim.get('question')}")
+    print(f"  consequence: {claim.get('consequence')}")
+
+
+def claim_open(args: argparse.Namespace) -> None:
+    claim_id = str(args.claim_id).strip()
+    if not claim_id:
+        raise SystemExit("claim id required")
+    claims = load_claims()
+    if claim_id in claims and not args.force:
+        raise SystemExit(f"Claim {claim_id!r} already exists (pass --force to replace)")
+    claim = {
+        "id": claim_id,
+        "question": args.question,
+        "status": "open",
+        "evidence": args.evidence or "",
+        "consequence": args.consequence,
+        "supersedes": args.supersedes or None,
+        "interpretation_id": args.interpretation_id or None,
+        "updated": today_date(),
+    }
+    problems = validate_claim_record(claim, require_closed_evidence=False)
+    if problems:
+        raise SystemExit("; ".join(problems))
+    claims[claim_id] = claim
+    save_claims(claims)
+    state = load_state()
+    state["active_claim_id"] = claim_id
+    if args.sync_focus:
+        state["active_focus"] = args.question
+    save_state(state)
+    STATE_MD.write_text(render_markdown(state), encoding="utf-8")
+    print(f"Opened claim {claim_id} and set active_claim_id")
+
+
+def claim_close(args: argparse.Namespace) -> None:
+    status = args.status
+    if status not in CLOSED_CLAIM_STATUSES:
+        raise SystemExit(
+            f"close status must be one of: {', '.join(sorted(CLOSED_CLAIM_STATUSES))}"
+        )
+    state = load_state()
+    claims = load_claims()
+    claim_id = str(args.claim_id or state.get("active_claim_id") or "").strip()
+    if not claim_id:
+        raise SystemExit("No claim id and no active_claim_id")
+    claim = claims.get(claim_id)
+    if claim is None:
+        raise SystemExit(f"Unknown claim {claim_id!r}")
+    claim["status"] = status
+    claim["evidence"] = args.evidence
+    if args.consequence:
+        claim["consequence"] = args.consequence
+    claim["updated"] = today_date()
+    problems = validate_claim_record(claim, require_closed_evidence=True)
+    if problems:
+        raise SystemExit("; ".join(problems))
+    claims[claim_id] = claim
+    save_claims(claims)
+    if args.clear_active or args.park:
+        state["active_claim_id"] = None
+    save_state(state)
+    STATE_MD.write_text(render_markdown(state), encoding="utf-8")
+    print(f"Closed claim {claim_id} as {status}")
+    if state.get("active_claim_id") is None:
+        print("active_claim_id cleared — gate will FAIL until a new claim is opened")
+
+
+def claim_show(args: argparse.Namespace) -> None:
+    state = load_state()
+    claims = load_claims()
+    claim_id = str(args.claim_id or state.get("active_claim_id") or "").strip()
+    if not claim_id:
+        raise SystemExit("No claim id and no active_claim_id")
+    claim = claims.get(claim_id)
+    if claim is None:
+        raise SystemExit(f"Unknown claim {claim_id!r}")
+    print(json.dumps(claim, indent=2, ensure_ascii=False))
+
+
+def claim_list(_: argparse.Namespace) -> None:
+    claims = load_claims()
+    if not claims:
+        print("(no claims)")
+        return
+    state = load_state()
+    active = str(state.get("active_claim_id") or "")
+    for claim_id, claim in sorted(claims.items()):
+        mark = "*" if claim_id == active else " "
+        print(
+            f"{mark} {claim_id}  [{claim.get('status')}]  "
+            f"{claim.get('question')}"
+        )
+
+
+def claim_activate(args: argparse.Namespace) -> None:
+    claims = load_claims()
+    claim_id = str(args.claim_id).strip()
+    if claim_id not in claims:
+        raise SystemExit(f"Unknown claim {claim_id!r}")
+    state = load_state()
+    state["active_claim_id"] = claim_id
+    if args.sync_focus:
+        state["active_focus"] = claims[claim_id].get("question") or state.get("active_focus")
+    save_state(state)
+    STATE_MD.write_text(render_markdown(state), encoding="utf-8")
+    print(f"Active claim set to {claim_id}")
+
+
+def claim_clear_active(_: argparse.Namespace) -> None:
+    state = load_state()
+    state["active_claim_id"] = None
+    save_state(state)
+    STATE_MD.write_text(render_markdown(state), encoding="utf-8")
+    print("Cleared active_claim_id (gate will FAIL)")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -381,7 +652,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("status", help="Print a compact state summary").set_defaults(func=status)
     subparsers.add_parser("render", help="Render docs/STATE.md from docs/state.json").set_defaults(func=render)
-    subparsers.add_parser("doctor", help="Validate docs/state.json").set_defaults(func=doctor)
+    subparsers.add_parser("doctor", help="Validate docs/state.json (+ claims schema)").set_defaults(func=doctor)
+    subparsers.add_parser(
+        "gate",
+        help="Bookkeeping gatekeeper: require active claim with question+consequence",
+    ).set_defaults(func=gate)
 
     update_parser = subparsers.add_parser("update", help="Set or create a task status")
     update_parser.add_argument("task_id")
@@ -429,6 +704,57 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     review_parser.set_defaults(func=review)
+
+    claim_parser = subparsers.add_parser("claim", help="Manage docs/claims.jsonl research claims")
+    claim_sub = claim_parser.add_subparsers(dest="claim_command", required=True)
+
+    open_p = claim_sub.add_parser("open", help="Create/upsert a claim and set it active")
+    open_p.add_argument("claim_id")
+    open_p.add_argument("--question", required=True)
+    open_p.add_argument("--consequence", required=True)
+    open_p.add_argument("--evidence", default="")
+    open_p.add_argument("--supersedes", default="")
+    open_p.add_argument("--interpretation-id", dest="interpretation_id", default="")
+    open_p.add_argument("--force", action="store_true")
+    open_p.add_argument(
+        "--sync-focus",
+        action="store_true",
+        help="Also set active_focus to the claim question",
+    )
+    open_p.set_defaults(func=claim_open)
+
+    close_p = claim_sub.add_parser("close", help="Close a claim (answered/deferred/dead_for_this_q)")
+    close_p.add_argument("claim_id", nargs="?", default="")
+    close_p.add_argument(
+        "--status",
+        required=True,
+        choices=sorted(CLOSED_CLAIM_STATUSES),
+    )
+    close_p.add_argument("--evidence", required=True)
+    close_p.add_argument("--consequence", default="")
+    close_p.add_argument(
+        "--clear-active",
+        "--park",
+        dest="clear_active",
+        action="store_true",
+        help="Clear active_claim_id after close (gate fails until next open)",
+    )
+    close_p.set_defaults(func=claim_close, park=False)
+
+    show_p = claim_sub.add_parser("show", help="Print one claim as JSON")
+    show_p.add_argument("claim_id", nargs="?", default="")
+    show_p.set_defaults(func=claim_show)
+
+    list_p = claim_sub.add_parser("list", help="List claims (* = active)")
+    list_p.set_defaults(func=claim_list)
+
+    act_p = claim_sub.add_parser("activate", help="Set active_claim_id to an existing claim")
+    act_p.add_argument("claim_id")
+    act_p.add_argument("--sync-focus", action="store_true")
+    act_p.set_defaults(func=claim_activate)
+
+    clear_p = claim_sub.add_parser("clear-active", help="Clear active_claim_id (park)")
+    clear_p.set_defaults(func=claim_clear_active)
 
     return parser
 

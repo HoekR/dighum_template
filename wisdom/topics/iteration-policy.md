@@ -4,29 +4,31 @@
 **Applies to:** multi-track DH projects using `docs/state.json` / `scripts/svz.py`  
 **Portable:** yes  
 **Pilot origin:** `republic_ner_matching` (`docs/ITERATION_POLICY.md`)  
-**Companion:** [iteration-decision-framework](iteration-decision-framework.md), [cost-sensitive-agent-workflow](cost-sensitive-agent-workflow.md)
+**Companion:** [iteration-decision-framework](iteration-decision-framework.md), [cost-sensitive-agent-workflow](cost-sensitive-agent-workflow.md), [claims-and-eval-gate](claims-and-eval-gate.md)
 
 ## Rule
 
-At **session start**, run `uv run python scripts/svz.py review` and read **Active tracks needing a decision** before choosing what to work on.
+At **session start**, run `uv run python scripts/svz.py review` and read **Active tracks needing a decision** before choosing what to work on. Then run `uv run python scripts/svz.py gate` so an **active claim** (question + consequence) is in force — see [claims-and-eval-gate](claims-and-eval-gate.md).
 
 Within a chosen track, if `plans/iteration.toml` exists, call `workflow-orchestrator advise` (or MCP `get_iteration_advice`) before retrying the **same concern**.
 
 ```text
 svz review              → which TRACK next?
+svz gate                → active claim present? (bookkeeping)
 iteration advise        → within that track, another polish pass on CONCERN X?
 svz metric / decision   → evidence + durable stop/continue
+claim open|close        → conclusions / wrong-track / defer
 ```
 
-## Two layers
+## Three layers
 
 | Layer | Artefact | Question |
 |-------|----------|----------|
 | **Tracks** | `docs/state.json` tasks + metrics | Which research line gets this session? |
 | **Concerns** | `plans/iteration.toml` + `iteration_log.jsonl` | Is another pass on this knot allowed? |
+| **Claims** | `docs/claims.jsonl` + `svz gate` | What did we decide, and what follows? |
 
-Do not collapse them: track choice needs **metric trends**; concern polish needs **stage gates / budgets / interlocks**.
-
+Do not collapse them: track choice needs **metric trends**; concern polish needs **stage gates / budgets / interlocks**; claims hold **outcomes** (not chat).
 ## Install in any existing repo
 
 Canonical path — run from a local clone of [dighum_template](https://github.com/HoekR/dighum_template):

@@ -9,7 +9,7 @@ flowchart TD
     classDef todo fill:#424242,stroke:#212121,color:#ddd,stroke-width:1px,stroke-dasharray: 5 5;
     classDef blocked fill:#c62828,stroke:#b71c1c,color:#fff,stroke-width:2px;
 
-    S0["S0: Project setup"] ::: todo
+    S0["S0: Project setup"] :::todo
 ```
 
 ## Overall Progress
@@ -19,6 +19,10 @@ flowchart TD
 ## Active Focus
 
 Set the current focus with `uv run python scripts/svz.py focus "..."`.
+
+## Active Claim
+
+_No active claim._ Run `uv run python scripts/svz.py claim open <id> --question "..." --consequence "..."` then `svz.py gate`.
 
 ## Key Intermediate Results & Metrics
 

@@ -27,12 +27,13 @@ Optional legacy inventory (`llm_archivist`):
 
 | Source | Destination in new repo |
 |--------|-------------------------|
-| `template/*` (excl. `optional/`, `shared/`, `.venv/`) | AGENTS.md, PLAN.md, plans/, README.md, docs, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
+| `template/*` (excl. `optional/`, `shared/`, `.venv/`, Living Project State) | AGENTS.md, PLAN.md, plans/, README.md, docs/DATA.md, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 | `packages/data_io/` | `data_io/` |
 | `template/optional/archivist/` + `llm-archivist` | `llm_archivist/`, inbox scripts (only with `--with-archivist`) |
+| Living Project State files | only with `--with-state` (or later `sync_project --state`) |
 | `tests/test_data_io.py` | `tests/` |
 
-`data_io` is always copied so each project is self-contained (SURF, offline). `llm_archivist` is opt-in — most new pipelines only need `data_io`.
+`data_io` is always copied so each project is self-contained (SURF, offline). `llm_archivist` and Living Project State are opt-in — most new pipelines only need `data_io`.
 
 ## Two-tool provenance model
 
@@ -66,14 +67,19 @@ flowchart LR
 6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
 7. **`<package>.code-workspace`** — folder + extension recommendations only
 
-## Living project state
+## Living project state (opt-in)
 
-Each bootstrapped project includes a compact status system for humans and AI agents:
+Not copied by default — stubs clutter slim derivatives. Enable with `--with-state` at bootstrap, or later:
+
+```bash
+./scripts/sync_project.sh ~/develop/MyNewProject --state
+```
 
 | File | Purpose |
 |------|---------|
-| `docs/state.json` | Machine-readable source of truth for task status, focus, metrics, blockers, and next actions |
-| `docs/STATE.md` | Rendered dashboard with a Mermaid overview and short state summary |
+| `docs/state.json` | Machine-readable source of truth for task status, focus, **active_claim_id**, metrics, blockers, and next actions |
+| `docs/STATE.md` | Rendered dashboard (Mermaid + short summary); mirrors **only the active claim**, not full history |
+| `docs/claims.jsonl` | Thin claims ledger (id, question, status, evidence, consequence) — conclusions / wrong-track |
 | `docs/DECISIONS.md` | Durable decision log for methodological and architectural choices |
 | `00_project_dashboard.ipynb` | Lightweight visual dashboard for status and result inspection |
 | `tasks/_template_task/00_task_overview.ipynb` | Copyable per-task overview notebook |
@@ -82,6 +88,8 @@ Use the SvZ CLI from the project root:
 
 ```bash
 uv run python scripts/svz.py status
+uv run python scripts/svz.py claim open my-q --question "…" --consequence "…" --sync-focus
+uv run python scripts/svz.py gate          # bookkeeping gatekeeper — agents must PASS
 uv run python scripts/svz.py update S1 inprogress --title "Diagnostics"
 uv run python scripts/svz.py metric S1 containment_mean 0.295 --label "Mean entity containment"
 uv run python scripts/svz.py decision "Boundary tolerance" --context "..." --decision "..." --reason "..."
@@ -89,8 +97,9 @@ uv run python scripts/svz.py render
 uv run python scripts/svz.py doctor
 ```
 
-Keep heavy processing in reproducible scripts. Let notebooks read outputs and render tables/plots;
-let `docs/state.json` and `docs/STATE.md` carry only the short current state needed to restart work.
+Keep heavy processing in reproducible scripts. Let **notebooks** explore (heatmaps, sequence graphs);
+let `docs/state.json` / `docs/STATE.md` carry only the short current state needed to restart work;
+let **claims** hold outcomes. See wisdom [claims-and-eval-gate](../wisdom/topics/claims-and-eval-gate.md).
 
 Optional layers (see [addons/README.md](../addons/README.md), [wisdom/INDEX.md](../wisdom/INDEX.md)):
 
