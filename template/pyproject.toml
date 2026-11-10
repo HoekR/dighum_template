@@ -13,7 +13,18 @@ dependencies = [
     "pyarrow>=24.0",
     "tomli-w>=1.0",
     "openpyxl>=3.1.2",
-    "ipykernel",
+    "ipykernel>=6.29",
+]
+
+[project.optional-dependencies]
+# Opt in with: uv add dighum-template[lineage]
+# Needed only by projects that declare a `mirror_of` entry in
+# data_manifest.toml (see docs/DATA_LINEAGE.md) — `python -m data_io
+# overview`/`sync-mirrors` and the inline staleness warning in resolve()
+# are no-ops without this, so most projects never need it.
+lineage = [
+    "dvc>=3.0",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]

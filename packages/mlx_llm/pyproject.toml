@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlx-llm"
+version = "0.1.0"
+description = "Local LLM inference via mlx-lm: generation, cached model loading, and prompted-JSON/affirmative-response parsing"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Rik Hoekstra", email = "rik.hoekstra@gmail.com"},
+]
+requires-python = ">=3.12"
+dependencies = [
+    "mlx-lm",
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mlx_llm*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["..", "."]

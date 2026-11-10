@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+notebook_env_mcp/__init__.py
+notebook_env_mcp/__main__.py
+notebook_env_mcp/discover.py
+notebook_env_mcp/kernels.py
+notebook_env_mcp/notebook_meta.py
+notebook_env_mcp/server.py
+notebook_env_mcp.egg-info/PKG-INFO
+notebook_env_mcp.egg-info/SOURCES.txt
+notebook_env_mcp.egg-info/dependency_links.txt
+notebook_env_mcp.egg-info/entry_points.txt
+notebook_env_mcp.egg-info/requires.txt
+notebook_env_mcp.egg-info/top_level.txt

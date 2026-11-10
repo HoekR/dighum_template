@@ -1,0 +1,4 @@
+fastmcp>=2.0
+pandas>=3.0
+pyarrow>=24.0
+tomli-w>=1.0

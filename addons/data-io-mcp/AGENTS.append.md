@@ -9,4 +9,4 @@ Optional Cursor MCP server for manifest registry access. Prefer MCP tools over r
 - `get_provenance(name)` — sidecar + parent chain
 - `suggest_manifest_entry(...)` — draft `[datasets.*]` TOML for human commit
 
-Setup: see `docs/addons/data-io-mcp/README.md`. Still run `uv run python -m data_io.check` in CI and before sessions.
+Setup: see `docs/addons/data-io-mcp/README.md`. Requires an optional sibling clone of [dighum_template](https://github.com/HoekR/dighum_template) for the server package (not vendored — no code replication). Still run `uv run python -m data_io.check` in CI and before sessions.

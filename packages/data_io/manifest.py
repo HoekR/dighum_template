@@ -23,6 +23,9 @@ class TierConfig:
     mount_check: Path | None
 
 
+DATASET_STATUSES = ("active", "parked", "superseded")
+
+
 @dataclass(frozen=True)
 class DatasetConfig:
     name: str
@@ -31,6 +34,19 @@ class DatasetConfig:
     phase: str = "explore"
     description: str = ""
     parent: str | None = None
+    mirror_of: str | None = None
+    # Lifecycle status, orthogonal to `phase` (pipeline maturity) and `tier` (storage).
+    # `parked`/`superseded` datasets still resolve and load -- the status is advisory, so
+    # that a verdict travels with the artifact instead of living only in a chronological
+    # decisions log where nobody looks for it.
+    #
+    # `status_unblock` is the load-bearing field: it names a TESTABLE condition, which makes
+    # the status self-invalidating (when the condition is met the status is provably wrong).
+    # A free-text reason alone rots into "do not use this" with no path out.
+    status: str = "active"
+    status_reason: str = ""
+    status_unblock: str = ""
+    status_decided: str = ""
 
 
 def _expand_path(value: str | None) -> Path | None:
@@ -97,7 +113,11 @@ class DataManager:
     def __init__(self, manifest_path: Path | None = None) -> None:
         self.manifest_path = manifest_path or find_manifest_path()
         self._raw = load_manifest_dict(self.manifest_path)
-        self.tiers = self._parse_tiers(self._raw.get("tiers", {}))
+        # A relative tier root (warm = "data") is relative to the manifest, not to wherever the
+        # process happens to start (a notebook in notebooks/, a script run from a subfolder).
+        base = Path(self.manifest_path).resolve().parent
+        self.tiers = {name: t if t.root.is_absolute() else TierConfig(root=base / t.root, mount_check=t.mount_check)
+                      for name, t in self._parse_tiers(self._raw.get("tiers", {})).items()}
         self.datasets = self._parse_datasets(self._raw.get("datasets", {}))
         self._maybe_autofill_tiers_from_environments()
 
@@ -129,6 +149,13 @@ class DataManager:
                 upstream = cfg.get("upstream_dependencies")
                 if isinstance(upstream, list) and upstream:
                     parent = str(upstream[0])
+            status = str(cfg.get("status", "active"))
+            if status not in DATASET_STATUSES:
+                allowed = ", ".join(DATASET_STATUSES)
+                raise ValueError(
+                    f"Dataset {name!r} has invalid status {status!r}; "
+                    f"expected one of: {allowed}"
+                )
             datasets[name] = DatasetConfig(
                 name=name,
                 tier=str(cfg.get("tier", "hot")),
@@ -136,6 +163,11 @@ class DataManager:
                 phase=str(cfg.get("phase", "explore")),
                 description=str(cfg.get("description", "")),
                 parent=parent,
+                mirror_of=cfg.get("mirror_of") or None,
+                status=status,
+                status_reason=str(cfg.get("status_reason", "")),
+                status_unblock=str(cfg.get("status_unblock", "")),
+                status_decided=str(cfg.get("status_decided", "")),
             )
         return datasets
 
@@ -192,8 +224,26 @@ class DataManager:
             )
 
         if dataset.path.is_absolute():
-            return dataset.path
-        return (tier.root / dataset.path).resolve()
+            result = dataset.path
+        else:
+            result = (tier.root / dataset.path).resolve()
+        self._maybe_warn_stale(logical_name)
+        return result
+
+    def _maybe_warn_stale(self, logical_name: str) -> None:
+        """Best-effort inline staleness check against a local DVC mirror, if any.
+
+        See data_io.lineage: a dataset with a sibling whose `mirror_of` points
+        back at it gets an automatic drift check on every resolve(). Never
+        allowed to break resolve() itself — a missing/broken lineage check is
+        not a reason to fail a normal dataset lookup.
+        """
+        try:
+            from data_io.lineage import warn_if_stale
+
+            warn_if_stale(logical_name, self)
+        except Exception:  # noqa: BLE001
+            pass
 
     def dataset(self, logical_name: str) -> DatasetConfig:
         dataset = self.datasets.get(logical_name)

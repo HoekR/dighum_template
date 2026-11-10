@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workflow-mcp"
+version = "0.1.0"
+description = "MCP server exposing PLAN.md progress and plans/steps guides for cost-sensitive agent workflow"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.0",
+]
+
+[project.scripts]
+workflow-mcp = "workflow_mcp.server:main"
+workflow-orchestrator = "workflow_mcp.cli_orchestrator:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["workflow_mcp*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["..", "."]
+asyncio_mode = "auto"

@@ -17,7 +17,7 @@ chmod +x scripts/*.sh
 ./scripts/bootstrap_web.sh ~/develop/raa_modernized raa-modernized --monorepo
 
 cd ~/develop/raa_modernized
-cp ../dighum_template/docs/PLAN-raa-modernized.md PLAN.md
+cp ../dighum_template/plans/PLAN-raa-modernized.md PLAN.md
 # data_manifest.local.toml: register raa_extab → ../raa_convert/extab.pkl
 docker compose -f web/docker-compose.yml up -d db
 uv run python scripts/import_release.py

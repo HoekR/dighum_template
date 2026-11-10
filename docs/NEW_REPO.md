@@ -6,7 +6,7 @@ Step-by-step guide for bootstrapping a historical-data pipeline project with man
 
 Optional: clone [llm-archivist](../../llm-archivist) only if you need legacy file inventory (`--with-archivist`).
 
-For **search/browse webapps** (e.g. RAA), use sibling [`dighum_web_template`](../../dighum_web_template) and see [PLAN-raa-modernized.md](PLAN-raa-modernized.md).
+For **search/browse webapps** (e.g. RAA), use sibling [`dighum_web_template`](../../dighum_web_template) and see [PLAN-raa-modernized.md](../plans/PLAN-raa-modernized.md).
 
 ---
 
@@ -34,6 +34,7 @@ Arguments:
 | `--addon <name>` | Apply specialized overlay (`rpp`, `trifecta`) — repeatable |
 | `--with-wisdom` | Copy portable wisdom topics into `docs/wisdom/` |
 | `--with-archivist` | Copy `llm_archivist` + inbox scripts (requires sibling `llm-archivist` repo) |
+| `--with-state` | Copy Living Project State (`svz.py`, `docs/STATE*`, dashboard, `tasks/`) — opt-in only |
 
 ```bash
 ./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --addon rpp --with-wisdom
@@ -66,8 +67,11 @@ LLM_ARCHIVIST_SRC=~/develop/llm-archivist/src/llm_archivist \
 | **Workspaces** | `notebooks/` (Jupyter), `output/` (local scratch fallback, gitignored) |
 | **Optional: archivist** | `llm_archivist/`, inbox scripts (with `--with-archivist`) |
 | **Optional: wisdom** | `docs/wisdom/` (with `--with-wisdom`) |
+| **Optional: state** | `scripts/svz.py`, `docs/STATE*`, `docs/DECISIONS.md`, dashboard, `tasks/` (with `--with-state`) |
 | **Optional: add-ons** | Extra rules/docs under `docs/addons/`, `.cursor/rules/` (with `--addon`) |
 | **Tests** | `tests/test_data_io.py`; archivist tests when `--with-archivist` |
+
+Default bootstrap stays thin: no SvZ / STATE / task-notebook stubs unless you pass `--with-state` (or later `sync_project.sh … --state`).
 
 ---
 
@@ -118,7 +122,8 @@ Keep the **generic** template rules; add project-specific guidance in these file
 | File | Customize |
 |------|-----------|
 | `AGENTS.md` | Domain docs, sibling repos, naming — **canonical** agent brief for both editors |
-| `PLAN.md` | Milestones, dataset table, current phase |
+| `PLAN.md` | Headlines: milestones checklist, dataset table |
+| `plans/` | Empty `milestones/` + `steps/` skeleton; add guides when multi-step |
 | `docs/DATA.md` | Tier layout, canonical sources, phase policy |
 | `.cursor/rules/` / `.github/copilot-instructions.md` | Keep generic (regenerate from `template/shared/agent-standards.md`) |
 | `data_manifest.toml` | All datasets your pipeline reads/writes |
@@ -168,25 +173,34 @@ Ensure large data, `.venv/`, `output/`, and `data_manifest.local.toml` stay out 
 
 ## 7. Sync updates from the template
 
-When `data_io` changes upstream:
+Bootstrap runs once. For existing projects, use **`sync_project.sh`** — full guide: **[SYNC-PROJECT.md](SYNC-PROJECT.md)**.
 
 ```bash
-# From dighum_template maintainers — refresh vendored data_io first:
-cd ~/develop/dighum_template && ./scripts/sync_data_io.sh
+cd ~/develop/dighum_template
 
-# Into your project:
-rsync -a ~/develop/dighum_template/packages/data_io/ ~/develop/MyNewProject/data_io/
+# Preview:
+./scripts/sync_project.sh ~/develop/MyNewProject --dry-run --all
+
+# Apply safe updates (data_io, wisdom, editor rules, applied add-ons, MCP deps):
+./scripts/sync_project.sh ~/develop/MyNewProject --all
 ```
 
-With archivist installed, also sync:
+Then in the project: `uv run python -m data_io.check` and `uv run pytest tests/ -q`.
+
+**Maintainers:** refresh dighum's vendored `data_io` first when upstream changes:
+
+```bash
+cd ~/develop/dighum_template && ./scripts/sync_data_io.sh
+./scripts/sync_project.sh ~/develop/MyNewProject --data-io
+```
+
+**Manual merge** still required for `AGENTS.md` (base), `pyproject.toml`, `data_manifest.toml`, `PLAN.md` / `plans/`, and domain code. MCP server packages stay in dighum_template (optional sibling) — `--mcp` only runs `uv sync` there.
+
+With archivist installed, sync `llm_archivist/` manually:
 
 ```bash
 rsync -a ~/develop/llm-archivist/src/llm_archivist/ ~/develop/MyNewProject/llm_archivist/
 ```
-
-Re-run `uv run python -m data_io.check` and tests after syncing.
-
-To pick up template file changes (AGENTS.md, `.cursor/rules/`, etc.), compare `dighum_template/template/` with your repo and merge manually — bootstrap only runs on empty directories.
 
 ---
 

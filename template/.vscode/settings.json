@@ -8,7 +8,7 @@
   "python.testing.pytestArgs": [
     "tests"
   ],
-  "jupyter.notebookFileRoot": "${workspaceFolder}/notebooks",
+  "jupyter.notebookFileRoot": "${fileDirname}",
   "notebook.kernelPicker.type": "mru",
   "files.exclude": {
     "**/__pycache__": true,

@@ -27,12 +27,13 @@ Optional legacy inventory (`llm_archivist`):
 
 | Source | Destination in new repo |
 |--------|-------------------------|
-| `template/*` (excl. `optional/`, `shared/`, `.venv/`) | AGENTS.md, PLAN.md, README.md, docs, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
+| `template/*` (excl. `optional/`, `shared/`, `.venv/`, Living Project State) | AGENTS.md, PLAN.md, plans/, README.md, docs/DATA.md, pyproject.toml, notebooks/, output/, `.vscode/`, `.cursor/rules/`, `.github/copilot-instructions.md` |
 | `packages/data_io/` | `data_io/` |
 | `template/optional/archivist/` + `llm-archivist` | `llm_archivist/`, inbox scripts (only with `--with-archivist`) |
+| Living Project State files | only with `--with-state` (or later `sync_project --state`) |
 | `tests/test_data_io.py` | `tests/` |
 
-`data_io` is always copied so each project is self-contained (SURF, offline). `llm_archivist` is opt-in — most new pipelines only need `data_io`.
+`data_io` is always copied so each project is self-contained (SURF, offline). `llm_archivist` and Living Project State are opt-in — most new pipelines only need `data_io`.
 
 ## Two-tool provenance model
 
@@ -62,9 +63,43 @@ flowchart LR
 2. **`.cursor/rules/project-standards.mdc`** — always-apply Cursor rules (same body as Copilot instructions)
 3. **`.github/copilot-instructions.md`** — VS Code Copilot (same body; do not maintain separately)
 4. **`docs/DATA.md`** — tiers, phases, both tools
-5. **`PLAN.md`** — status + data-path table
+5. **`PLAN.md`** — headlines (goal, checklist, data-path table); `plans/` holds milestones and steps
 6. **`.vscode/settings.json`** — interpreter, pytest, Jupyter, excludes (both editors)
 7. **`<package>.code-workspace`** — folder + extension recommendations only
+
+## Living project state (opt-in)
+
+Not copied by default — stubs clutter slim derivatives. Enable with `--with-state` at bootstrap, or later:
+
+```bash
+./scripts/sync_project.sh ~/develop/MyNewProject --state
+```
+
+| File | Purpose |
+|------|---------|
+| `docs/state.json` | Machine-readable source of truth for task status, focus, **active_claim_id**, metrics, blockers, and next actions |
+| `docs/STATE.md` | Rendered dashboard (Mermaid + short summary); mirrors **only the active claim**, not full history |
+| `docs/claims.jsonl` | Thin claims ledger (id, question, status, evidence, consequence) — conclusions / wrong-track |
+| `docs/DECISIONS.md` | Durable decision log for methodological and architectural choices |
+| `00_project_dashboard.ipynb` | Lightweight visual dashboard for status and result inspection |
+| `tasks/_template_task/00_task_overview.ipynb` | Copyable per-task overview notebook |
+
+Use the SvZ CLI from the project root:
+
+```bash
+uv run python scripts/svz.py status
+uv run python scripts/svz.py claim open my-q --question "…" --consequence "…" --sync-focus
+uv run python scripts/svz.py gate          # bookkeeping gatekeeper — agents must PASS
+uv run python scripts/svz.py update S1 inprogress --title "Diagnostics"
+uv run python scripts/svz.py metric S1 containment_mean 0.295 --label "Mean entity containment"
+uv run python scripts/svz.py decision "Boundary tolerance" --context "..." --decision "..." --reason "..."
+uv run python scripts/svz.py render
+uv run python scripts/svz.py doctor
+```
+
+Keep heavy processing in reproducible scripts. Let **notebooks** explore (heatmaps, sequence graphs);
+let `docs/state.json` / `docs/STATE.md` carry only the short current state needed to restart work;
+let **claims** hold outcomes. See wisdom [claims-and-eval-gate](../wisdom/topics/claims-and-eval-gate.md).
 
 Optional layers (see [addons/README.md](../addons/README.md), [wisdom/INDEX.md](../wisdom/INDEX.md)):
 
@@ -98,10 +133,28 @@ uv run pytest tests/ -q
 
 ## Syncing updates
 
+Use **`sync_project.sh`** from dighum_template — see [SYNC-PROJECT.md](SYNC-PROJECT.md).
+
 ```bash
-rsync -a ~/develop/dighum_template/packages/data_io/ ~/develop/MyNewProject/data_io/
-# if archivist installed:
+cd ~/develop/dighum_template
+./scripts/sync_project.sh ~/develop/MyNewProject --dry-run --all
+./scripts/sync_project.sh ~/develop/MyNewProject --all
+```
+
+Or sync pieces only:
+
+```bash
+./scripts/sync_project.sh ~/develop/MyNewProject --data-io --wisdom
+./scripts/sync_project.sh ~/develop/MyNewProject --state
+# archivist (manual for now):
 rsync -a ~/develop/llm-archivist/src/llm_archivist/ ~/develop/MyNewProject/llm_archivist/
+```
+
+For the state feature only, the convenience wrapper is equivalent to `sync_project.sh --state --editor-rules`:
+
+```bash
+./scripts/update_project.sh ~/develop/MyExistingProject --dry-run
+./scripts/update_project.sh ~/develop/MyExistingProject
 ```
 
 ## Maintaining dighum_template

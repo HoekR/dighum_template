@@ -27,7 +27,9 @@ if [[ ! -f "$ADDON_DIR/addon.toml" ]]; then
 fi
 
 export PROJECT ADDON ADDON_DIR REPO_ROOT
-python3 <<'PY'
+# Use the repo's uv-managed Python (>=3.12) so tomllib is available even if an
+# unrelated/older venv is activated in the shell.
+uv run --directory "$REPO_ROOT" python <<'PY'
 import re
 import tomllib
 from datetime import date

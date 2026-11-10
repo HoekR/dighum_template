@@ -8,13 +8,9 @@ Exposes manifest-backed dataset registry to Cursor via MCP — same governed API
 - `.cursor/mcp.json.example` — copy to `.cursor/mcp.json` and edit paths
 - Appended section in `AGENTS.md`
 
-## MCP package location
+## Optional dependency: dighum_template
 
-The server package lives in **dighum_template**:
-
-`~/develop/dighum_template/packages/data_io_mcp`
-
-It is not vendored into each project; point `--project-root` at your DH project (which must already have `data_io/` and `data_manifest.toml`).
+The MCP server lives in [dighum_template](https://github.com/HoekR/dighum_template) `packages/data_io_mcp/` — **not** copied into derivatives. Clone dighum once as a sibling; this add-on only copies config and docs. Vendored `data_io/` in the project is separate (runtime). Skip entirely if you do not use Cursor MCP.
 
 ## Apply
 

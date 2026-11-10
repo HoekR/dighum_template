@@ -30,6 +30,10 @@ Add to your **project's** `.cursor/mcp.json`:
 
 Or apply the `data-io-mcp` add-on for `.cursor/mcp.json.example`.
 
+## Optional dependency for derivatives
+
+Server code stays in [dighum_template](https://github.com/HoekR/dighum_template) — not vendored into each project (no replication). Derivatives clone dighum as an optional sibling and point `.cursor/mcp.json` here; vendored `data_io/` in the project is runtime (separate).
+
 ## Tools
 
 - `check_manifest()` — tiers + datasets with availability

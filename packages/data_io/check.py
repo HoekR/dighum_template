@@ -55,12 +55,67 @@ def run_check(manager: DataManager | None = None) -> int:
     for row in dataset_rows:
         print(f"{row[0]:<28} {row[1]:<10} {row[2]:<8} {row[3]:<55} {row[4]}")
 
+    # Printed LAST, and only for non-active datasets, so a verdict travels with the
+    # artifact and lands where it is actually read. A `status` column in the table above
+    # would be buried among hundreds of rows -- which is the discoverability failure this
+    # field exists to fix.
+    flagged = [d for _, d in sorted(manager.datasets.items()) if d.status != "active"]
+    if flagged:
+        print(f"\nDatasets not active ({len(flagged)}):")
+        for dataset in flagged:
+            decided = f" [{dataset.status_decided}]" if dataset.status_decided else ""
+            print(f"  {dataset.name}  --  {dataset.status.upper()}{decided}")
+            if dataset.status_reason:
+                print(f"      reason:  {dataset.status_reason}")
+            if dataset.status_unblock:
+                print(f"      unblock: {dataset.status_unblock}")
+            else:
+                print("      unblock: (missing — status will rot without a testable exit)")
+
     return 1 if failures else 0
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Verify data manifest tiers and dataset paths.")
-    parser.parse_args(argv)
+    subparsers = parser.add_subparsers(dest="command")
+
+    overview_parser = subparsers.add_parser(
+        "overview", help="Print the lineage chain + staleness status for one dataset."
+    )
+    overview_parser.add_argument("logical_name")
+
+    sync_parser = subparsers.add_parser(
+        "sync-mirrors",
+        help="Refresh every `mirror_of` dataset from its live source, then `dvc add` changes.",
+    )
+    sync_parser.add_argument(
+        "--push", action="store_true", help="Also run `dvc push` after re-adding changed mirrors."
+    )
+    args = parser.parse_args(argv)
+
+    if args.command == "overview":
+        from data_io.lineage import overview as _overview
+
+        print(_overview(args.logical_name))
+        sys.exit(0)
+
+    if args.command == "sync-mirrors":
+        from data_io.lineage import sync_mirrors
+
+        manager = DataManager()
+        changed = sync_mirrors(manager)
+        if not changed:
+            print("No mirrors changed.")
+            sys.exit(0)
+        print(f"Changed: {', '.join(changed)}")
+        import subprocess
+
+        paths = [str(manager.resolve(name)) for name in changed]
+        subprocess.run(["dvc", "add", *paths], check=True)
+        if args.push:
+            subprocess.run(["dvc", "push"], check=True)
+        sys.exit(0)
+
     sys.exit(run_check())
 
 
