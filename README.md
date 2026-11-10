@@ -56,8 +56,8 @@ dighum_template/
 │   ├── README.md             # PROJECT_NAME substituted at bootstrap
 │   ├── PLAN.md               # headlines only
 │   ├── plans/                # empty milestones/ + steps/ (fill on demand)
-│   ├── 00_project_dashboard.ipynb
-│   ├── tasks/                # reusable task overview notebooks
+│   ├── 00_project_dashboard.ipynb  # opt-in via --with-state
+│   ├── tasks/                # opt-in via --with-state
 │   └── shared/               # not copied; source for editor rules
 └── tests/
 ```
@@ -86,12 +86,14 @@ Catalog: [addons/README.md](addons/README.md) · Index: [wisdom/INDEX.md](wisdom
 ```bash
 ./scripts/sync_project.sh ~/develop/my-project --all
 ./scripts/sync_project.sh ~/develop/my-project --agents
+./scripts/sync_project.sh ~/develop/my-project --state   # Living Project State (opt-in)
 ./scripts/update_project.sh ~/develop/my-project --dry-run
 ```
 
 New projects include the plan-step executor automatically. The `--agents` form
 adds missing template custom agents to an existing project without overwriting
-local agent customizations.
+local agent customizations. Living Project State (`svz`, STATE, `tasks/`) is
+**not** copied by default — use `--with-state` at bootstrap or `sync_project --state`.
 
 After editing `template/`, `wisdom/`, or `addons/`, test:
 
@@ -100,6 +102,9 @@ TMP=$(mktemp -d)
 ./scripts/bootstrap.sh "$TMP/test" test-project --addon rpp --with-wisdom
 test ! -e "$TMP/test/README.md.template"
 test ! -e "$TMP/test/shared"
+test ! -e "$TMP/test/tasks"
+test ! -e "$TMP/test/scripts/svz.py"
+test ! -e "$TMP/test/docs/STATE.md"
 test -f "$TMP/test/.github/copilot-instructions.md"
 test -f "$TMP/test/CLAUDE.md"
 test -f "$TMP/test/.github/agents/plan-step-executor.agent.md"

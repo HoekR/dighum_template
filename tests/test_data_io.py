@@ -146,3 +146,54 @@ path = "out/overridden.jsonl"
     )
     manager = DataManager(manifest_dir / "data_manifest.toml")
     assert manager.resolve("sample_jsonl").name == "overridden.jsonl"
+
+
+def test_dataset_status_defaults_active(manifest_dir: Path) -> None:
+    manager = DataManager(manifest_dir / "data_manifest.toml")
+    assert manager.dataset("sample_jsonl").status == "active"
+
+
+def test_dataset_status_parked_fields(tmp_path: Path) -> None:
+    manifest = tmp_path / "data_manifest.toml"
+    root = tmp_path / "hot"
+    root.mkdir()
+    manifest.write_text(
+        f"""
+[tiers.hot]
+root = "{root}"
+
+[datasets.old]
+tier = "hot"
+path = "old.parquet"
+status = "parked"
+status_reason = "replaced by new pipeline"
+status_unblock = "coverage >= 0.95 on new pipeline"
+status_decided = "2026-10-01"
+""",
+        encoding="utf-8",
+    )
+    dataset = DataManager(manifest).dataset("old")
+    assert dataset.status == "parked"
+    assert dataset.status_reason.startswith("replaced")
+    assert "coverage" in dataset.status_unblock
+    assert dataset.status_decided == "2026-10-01"
+
+
+def test_dataset_status_invalid_raises(tmp_path: Path) -> None:
+    manifest = tmp_path / "data_manifest.toml"
+    root = tmp_path / "hot"
+    root.mkdir()
+    manifest.write_text(
+        f"""
+[tiers.hot]
+root = "{root}"
+
+[datasets.bad]
+tier = "hot"
+path = "x.parquet"
+status = "deprecated"
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="invalid status"):
+        DataManager(manifest)

@@ -34,6 +34,7 @@ Arguments:
 | `--addon <name>` | Apply specialized overlay (`rpp`, `trifecta`) — repeatable |
 | `--with-wisdom` | Copy portable wisdom topics into `docs/wisdom/` |
 | `--with-archivist` | Copy `llm_archivist` + inbox scripts (requires sibling `llm-archivist` repo) |
+| `--with-state` | Copy Living Project State (`svz.py`, `docs/STATE*`, dashboard, `tasks/`) — opt-in only |
 
 ```bash
 ./scripts/bootstrap.sh ~/develop/MyNewProject my-new-project --addon rpp --with-wisdom
@@ -66,8 +67,11 @@ LLM_ARCHIVIST_SRC=~/develop/llm-archivist/src/llm_archivist \
 | **Workspaces** | `notebooks/` (Jupyter), `output/` (local scratch fallback, gitignored) |
 | **Optional: archivist** | `llm_archivist/`, inbox scripts (with `--with-archivist`) |
 | **Optional: wisdom** | `docs/wisdom/` (with `--with-wisdom`) |
+| **Optional: state** | `scripts/svz.py`, `docs/STATE*`, `docs/DECISIONS.md`, dashboard, `tasks/` (with `--with-state`) |
 | **Optional: add-ons** | Extra rules/docs under `docs/addons/`, `.cursor/rules/` (with `--addon`) |
 | **Tests** | `tests/test_data_io.py`; archivist tests when `--with-archivist` |
+
+Default bootstrap stays thin: no SvZ / STATE / task-notebook stubs unless you pass `--with-state` (or later `sync_project.sh … --state`).
 
 ---
 

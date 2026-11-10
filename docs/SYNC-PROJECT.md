@@ -32,11 +32,11 @@ Pre–Step 0 projects (like `wvo_corr` today) have neither — skip these checks
 | `--wisdom` | Copy portable wisdom topics → `docs/wisdom/` (`copy_wisdom.sh`) |
 | `--editor-rules` | Refresh `.cursor/rules/project-standards.mdc` + `.github/copilot-instructions.md` + `CLAUDE.md` |
 | `--agents` | Add missing template custom agents under `.github/agents/` (never overwrite local agents) |
-| `--state` | Refresh Living Project State helpers (`scripts/svz.py`, dashboard stubs) when missing |
+| `--state` | Add Living Project State helpers (`scripts/svz.py`, STATE/*, dashboard, `tasks/`) when missing — **opt-in; not part of `--all`** |
 | `--addons` | Re-apply every add-on listed in `docs/addons/APPLIED.md` |
 | `--addon NAME` | Re-apply one add-on (repeatable) |
 | `--mcp` | `uv sync` MCP packages in dighum_template (`workflow_mcp`, `data_io_mcp`, `notebook_env_mcp`) — not copied into the project |
-| `--all` | All of the above |
+| `--all` | `--data-io --wisdom --editor-rules --agents --addons --mcp` (excludes `--state`) |
 | `--dry-run` | Print actions only |
 
 ## What stays manual

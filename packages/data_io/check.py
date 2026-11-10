@@ -55,6 +55,23 @@ def run_check(manager: DataManager | None = None) -> int:
     for row in dataset_rows:
         print(f"{row[0]:<28} {row[1]:<10} {row[2]:<8} {row[3]:<55} {row[4]}")
 
+    # Printed LAST, and only for non-active datasets, so a verdict travels with the
+    # artifact and lands where it is actually read. A `status` column in the table above
+    # would be buried among hundreds of rows -- which is the discoverability failure this
+    # field exists to fix.
+    flagged = [d for _, d in sorted(manager.datasets.items()) if d.status != "active"]
+    if flagged:
+        print(f"\nDatasets not active ({len(flagged)}):")
+        for dataset in flagged:
+            decided = f" [{dataset.status_decided}]" if dataset.status_decided else ""
+            print(f"  {dataset.name}  --  {dataset.status.upper()}{decided}")
+            if dataset.status_reason:
+                print(f"      reason:  {dataset.status_reason}")
+            if dataset.status_unblock:
+                print(f"      unblock: {dataset.status_unblock}")
+            else:
+                print("      unblock: (missing — status will rot without a testable exit)")
+
     return 1 if failures else 0
 
 

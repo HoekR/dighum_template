@@ -46,8 +46,13 @@ def build_manifest_report(manager: DataManager) -> dict[str, Any]:
             "path": path_str,
             "description": dataset.description,
             "parent": dataset.parent,
+            "status": getattr(dataset, "status", "active"),
             "available": ok,
         }
+        if getattr(dataset, "status", "active") != "active":
+            row["status_reason"] = getattr(dataset, "status_reason", "") or None
+            row["status_unblock"] = getattr(dataset, "status_unblock", "") or None
+            row["status_decided"] = getattr(dataset, "status_decided", "") or None
         if error:
             row["error"] = error
         dataset_rows.append(row)
@@ -80,19 +85,33 @@ def list_datasets(
         except TierUnavailableError:
             exists = False
             path_str = f"<tier {dataset.tier!r} unavailable>"
-        rows.append(
-            {
-                "logical_name": name,
-                "tier": dataset.tier,
-                "phase": dataset.phase,
-                "description": dataset.description,
-                "parent": dataset.parent,
-                "resolved_path": path_str,
-                "exists": exists,
-                "tier_available": tier_mounted,
-            }
-        )
+        row = {
+            "logical_name": name,
+            "tier": dataset.tier,
+            "phase": dataset.phase,
+            "description": dataset.description,
+            "parent": dataset.parent,
+            "status": getattr(dataset, "status", "active"),
+            "resolved_path": path_str,
+            "exists": exists,
+            "tier_available": tier_mounted,
+        }
+        if row["status"] != "active":
+            row["status_reason"] = getattr(dataset, "status_reason", "") or None
+            row["status_unblock"] = getattr(dataset, "status_unblock", "") or None
+            row["status_decided"] = getattr(dataset, "status_decided", "") or None
+        rows.append(row)
     return rows
+
+
+def _status_fields(dataset: Any) -> dict[str, Any]:
+    status = getattr(dataset, "status", "active")
+    fields: dict[str, Any] = {"status": status}
+    if status != "active":
+        fields["status_reason"] = getattr(dataset, "status_reason", "") or None
+        fields["status_unblock"] = getattr(dataset, "status_unblock", "") or None
+        fields["status_decided"] = getattr(dataset, "status_decided", "") or None
+    return fields
 
 
 def resolve_dataset_info(manager: DataManager, logical_name: str) -> dict[str, Any]:
@@ -108,6 +127,7 @@ def resolve_dataset_info(manager: DataManager, logical_name: str) -> dict[str, A
             "phase": dataset.phase,
             "description": dataset.description,
             "parent": dataset.parent,
+            **_status_fields(dataset),
             "resolved_path": str(resolved),
             "exists": tier_mounted and resolved.exists(),
             "tier_available": tier_mounted,
@@ -119,6 +139,7 @@ def resolve_dataset_info(manager: DataManager, logical_name: str) -> dict[str, A
             "phase": dataset.phase,
             "description": dataset.description,
             "parent": dataset.parent,
+            **_status_fields(dataset),
             "resolved_path": None,
             "exists": False,
             "tier_available": False,

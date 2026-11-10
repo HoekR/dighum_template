@@ -9,11 +9,11 @@
 #   --wisdom           Copy portable wisdom topics → docs/wisdom/
 #   --editor-rules     Refresh .cursor/rules + .github/copilot-instructions.md + CLAUDE.md
 #   --agents           Copy missing template custom agents → .github/agents/
-#   --state            Add/update Living Project State CLI and missing dashboard files
+#   --state            Add Living Project State CLI / dashboard / tasks/ (opt-in; not in --all)
 #   --addons           Re-apply add-ons listed in docs/addons/APPLIED.md
 #   --addon NAME       Re-apply one add-on (repeatable)
 #   --mcp              uv sync MCP packages in dighum_template (not copied into project)
-#   --all              --data-io --wisdom --editor-rules --agents --state --addons --mcp
+#   --all              --data-io --wisdom --editor-rules --agents --addons --mcp
 #   --dry-run          Print actions without executing
 #
 # Examples:
@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
       DO_WISDOM=true
       DO_EDITOR=true
       DO_AGENTS=true
-      DO_STATE=true
+      # --state intentionally omitted: Living Project State stubs clutter slim repos
       DO_ADDONS=true
       DO_MCP=true
       shift

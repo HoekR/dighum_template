@@ -23,6 +23,9 @@ class TierConfig:
     mount_check: Path | None
 
 
+DATASET_STATUSES = ("active", "parked", "superseded")
+
+
 @dataclass(frozen=True)
 class DatasetConfig:
     name: str
@@ -32,6 +35,18 @@ class DatasetConfig:
     description: str = ""
     parent: str | None = None
     mirror_of: str | None = None
+    # Lifecycle status, orthogonal to `phase` (pipeline maturity) and `tier` (storage).
+    # `parked`/`superseded` datasets still resolve and load -- the status is advisory, so
+    # that a verdict travels with the artifact instead of living only in a chronological
+    # decisions log where nobody looks for it.
+    #
+    # `status_unblock` is the load-bearing field: it names a TESTABLE condition, which makes
+    # the status self-invalidating (when the condition is met the status is provably wrong).
+    # A free-text reason alone rots into "do not use this" with no path out.
+    status: str = "active"
+    status_reason: str = ""
+    status_unblock: str = ""
+    status_decided: str = ""
 
 
 def _expand_path(value: str | None) -> Path | None:
@@ -134,6 +149,13 @@ class DataManager:
                 upstream = cfg.get("upstream_dependencies")
                 if isinstance(upstream, list) and upstream:
                     parent = str(upstream[0])
+            status = str(cfg.get("status", "active"))
+            if status not in DATASET_STATUSES:
+                allowed = ", ".join(DATASET_STATUSES)
+                raise ValueError(
+                    f"Dataset {name!r} has invalid status {status!r}; "
+                    f"expected one of: {allowed}"
+                )
             datasets[name] = DatasetConfig(
                 name=name,
                 tier=str(cfg.get("tier", "hot")),
@@ -142,6 +164,10 @@ class DataManager:
                 description=str(cfg.get("description", "")),
                 parent=parent,
                 mirror_of=cfg.get("mirror_of") or None,
+                status=status,
+                status_reason=str(cfg.get("status_reason", "")),
+                status_unblock=str(cfg.get("status_unblock", "")),
+                status_decided=str(cfg.get("status_decided", "")),
             )
         return datasets
 

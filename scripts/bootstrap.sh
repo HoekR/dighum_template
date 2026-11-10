@@ -8,6 +8,7 @@
 #   --addon <name>       Apply add-on overlay (repeatable)
 #   --with-wisdom        Copy portable wisdom topics to docs/wisdom/
 #   --with-archivist     Copy llm_archivist + inbox scripts (legacy file inventory)
+#   --with-state         Copy Living Project State (svz.py, STATE/*, dashboard, tasks/)
 #
 # Environment:
 #   LLM_ARCHIVIST_SRC  Path to llm_archivist package (default: ../llm-archivist/src/llm_archivist)
@@ -16,6 +17,7 @@
 #   ./scripts/bootstrap.sh ~/develop/my-new-project my-new-project
 #   ./scripts/bootstrap.sh ~/develop/gnb-analysis gnb-analysis --addon rpp --with-wisdom
 #   ./scripts/bootstrap.sh ~/develop/my-new-project my-new-project --with-archivist
+#   ./scripts/bootstrap.sh ~/develop/my-new-project my-new-project --with-state
 
 set -euo pipefail
 
@@ -23,6 +25,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ADDONS=()
 WITH_WISDOM=false
 WITH_ARCHIVIST=false
+WITH_STATE=false
 POSITIONAL=()
 
 while [[ $# -gt 0 ]]; do
@@ -39,8 +42,12 @@ while [[ $# -gt 0 ]]; do
       WITH_ARCHIVIST=true
       shift
       ;;
+    --with-state)
+      WITH_STATE=true
+      shift
+      ;;
     -h|--help)
-      sed -n '2,20p' "$0"
+      sed -n '2,22p' "$0"
       exit 0
       ;;
     --)
@@ -59,7 +66,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-TARGET="${POSITIONAL[0]:?Usage: bootstrap.sh <target_dir> [package_name] [--addon NAME] [--with-wisdom] [--with-archivist]}"
+TARGET="${POSITIONAL[0]:?Usage: bootstrap.sh <target_dir> [package_name] [--addon NAME] [--with-wisdom] [--with-archivist] [--with-state]}"
 PKG_NAME="${POSITIONAL[1]:-$(basename "$TARGET" | tr '[:upper:]' '[:lower:]' | tr ' _' '-')}"
 LLM_ARCHIVIST_SRC="${LLM_ARCHIVIST_SRC:-$REPO_ROOT/../llm-archivist/src/llm_archivist}"
 
@@ -77,6 +84,8 @@ fi
 mkdir -p "$TARGET/tests"
 
 echo "Copying template → $TARGET"
+# Living Project State (svz, STATE/*, dashboard, tasks/) is opt-in — keeps
+# derivative repos free of unused stubs. Use --with-state or sync_project --state.
 rsync -a \
   --exclude 'optional/' \
   --exclude 'pyproject.with-archivist.toml' \
@@ -86,10 +95,27 @@ rsync -a \
   --exclude '__pycache__/' \
   --exclude '.pytest_cache/' \
   --exclude '*.egg-info/' \
+  --exclude '00_project_dashboard.ipynb' \
+  --exclude 'tasks/' \
+  --exclude 'scripts/svz.py' \
+  --exclude 'docs/STATE.md' \
+  --exclude 'docs/state.json' \
+  --exclude 'docs/DECISIONS.md' \
   "$REPO_ROOT/template/" "$TARGET/"
 
 if [[ "$WITH_ARCHIVIST" == true ]]; then
   cp "$REPO_ROOT/template/pyproject.with-archivist.toml" "$TARGET/pyproject.toml"
+fi
+
+if [[ "$WITH_STATE" == true ]]; then
+  echo "Copying Living Project State helpers"
+  mkdir -p "$TARGET/docs" "$TARGET/scripts" "$TARGET/tasks"
+  cp "$REPO_ROOT/template/scripts/svz.py" "$TARGET/scripts/svz.py"
+  cp "$REPO_ROOT/template/docs/state.json" "$TARGET/docs/state.json"
+  cp "$REPO_ROOT/template/docs/STATE.md" "$TARGET/docs/STATE.md"
+  cp "$REPO_ROOT/template/docs/DECISIONS.md" "$TARGET/docs/DECISIONS.md"
+  cp "$REPO_ROOT/template/00_project_dashboard.ipynb" "$TARGET/00_project_dashboard.ipynb"
+  rsync -a "$REPO_ROOT/template/tasks/" "$TARGET/tasks/"
 fi
 
 sed "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/README.md" > "$TARGET/README.md.tmp"
@@ -120,13 +146,17 @@ cp "$TARGET/data_manifest.toml.example" "$TARGET/data_manifest.toml"
 if [[ "$(uname)" == "Darwin" ]]; then
   sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/pyproject.toml"
   sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/data_manifest.toml"
-  find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
-    -exec sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" {} +
+  if [[ "$WITH_STATE" == true ]]; then
+    find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
+      -exec sed -i '' "s/PROJECT_NAME/$PKG_NAME/g" {} +
+  fi
 else
   sed -i "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/pyproject.toml"
   sed -i "s/PROJECT_NAME/$PKG_NAME/g" "$TARGET/data_manifest.toml"
-  find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
-    -exec sed -i "s/PROJECT_NAME/$PKG_NAME/g" {} +
+  if [[ "$WITH_STATE" == true ]]; then
+    find "$TARGET" \( -name 'STATE.md' -o -name 'state.json' -o -name '00_project_dashboard.ipynb' -o -name '00_task_overview.ipynb' \) \
+      -exec sed -i "s/PROJECT_NAME/$PKG_NAME/g" {} +
+  fi
 fi
 
 WORKSPACE_TEMPLATE="$TARGET/PROJECT_NAME.code-workspace"
@@ -171,6 +201,15 @@ if [[ "$WITH_ARCHIVIST" == true ]]; then
 llm_archivist installed — uv run archive-inventory / uv run archive-scan"
 fi
 
+STATE_NOTE=""
+if [[ "$WITH_STATE" == true ]]; then
+  STATE_NOTE="
+Living Project State installed — uv run python scripts/svz.py status"
+else
+  STATE_NOTE="
+Living Project State skipped — add later: $REPO_ROOT/scripts/sync_project.sh $TARGET --state"
+fi
+
 echo "Setting up uv venv + installing IPython kernel"
 (
   cd "$TARGET"
@@ -190,7 +229,7 @@ Next steps:
   # Optional laptop fallback: cp data_manifest.local.toml.example data_manifest.local.toml
   uv run python -m data_io.check
   cursor $WORKSPACE_FILE    # or: code $WORKSPACE_FILE
-$WISDOM_NOTE$ADDON_NOTE$ARCHIVIST_NOTE
+$WISDOM_NOTE$ADDON_NOTE$ARCHIVIST_NOTE$STATE_NOTE
 
 Notebook workspace: notebooks/
 Scratch fallback:   output/ (via data_manifest.local.toml when drive unplugged)

@@ -34,10 +34,25 @@ STATE_JSON = Path("docs/state.json")
 STATE_MD = Path("docs/STATE.md")
 DECISIONS_MD = Path("docs/DECISIONS.md")
 CLAIMS_JSONL = Path("docs/claims.jsonl")
+EVIDENCE_ROOT = Path("docs/evidence")
 MANUAL_MARKER = "<!-- Manual notes below this line are preserved by scripts/svz.py render. -->"
 VALID_STATUSES = {"todo", "inprogress", "done", "blocked"}
-VALID_CLAIM_STATUSES = {"open", "deferred", "answered", "dead_for_this_q"}
-CLOSED_CLAIM_STATUSES = {"deferred", "answered", "dead_for_this_q"}
+VALID_CLAIM_STATUSES = {
+    "open",
+    "deferred",
+    "answered",
+    "dead_for_this_q",
+    "retracted",
+}
+CLOSED_CLAIM_STATUSES = {"deferred", "answered", "dead_for_this_q", "retracted"}
+VALID_DESIGNS = {"observational", "controlled"}
+MAX_ACTIVE_CLAIMS = 4
+# Consequence should name a counterfactual / baseline (lint).
+CONSEQUENCE_COMPARE_RE = re.compile(
+    r"\b(vs\.?|versus|compared\s+to|relative\s+to|against|baseline|instead\s+of|"
+    r"rather\s+than|over\s+running|vs\s+discarding)\b",
+    re.I,
+)
 DEFAULT_TREND_THRESHOLD = 0.03
 
 
@@ -89,8 +104,125 @@ def save_claims(claims: dict[str, dict[str, Any]]) -> None:
     CLAIMS_JSONL.write_text(("\n".join(lines) + ("\n" if lines else "")), encoding="utf-8")
 
 
-def validate_claim_record(claim: dict[str, Any], *, require_closed_evidence: bool) -> list[str]:
+def active_claim_ids(state: dict[str, Any]) -> list[str]:
+    """Prefer active_claim_ids; migrate legacy active_claim_id."""
+    raw = state.get("active_claim_ids")
+    if isinstance(raw, list):
+        ids = [str(x).strip() for x in raw if str(x).strip()]
+        # de-dupe preserve order
+        seen: set[str] = set()
+        out: list[str] = []
+        for claim_id in ids:
+            if claim_id not in seen:
+                seen.add(claim_id)
+                out.append(claim_id)
+        return out
+    legacy = str(state.get("active_claim_id") or "").strip()
+    return [legacy] if legacy else []
+
+
+def set_active_claim_ids(state: dict[str, Any], ids: list[str]) -> None:
+    cleaned: list[str] = []
+    seen: set[str] = set()
+    for claim_id in ids:
+        text = str(claim_id).strip()
+        if text and text not in seen:
+            seen.add(text)
+            cleaned.append(text)
+    if len(cleaned) > MAX_ACTIVE_CLAIMS:
+        raise SystemExit(
+            f"At most {MAX_ACTIVE_CLAIMS} active claims (got {len(cleaned)}). "
+            "Deactivate one first: svz.py claim deactivate <id>"
+        )
+    state["active_claim_ids"] = cleaned
+    # Keep legacy field in sync for older readers
+    state["active_claim_id"] = cleaned[0] if cleaned else None
+
+
+def consequence_has_comparison(text: str) -> bool:
+    return bool(CONSEQUENCE_COMPARE_RE.search(str(text or "")))
+
+
+def evidence_path_ok(path_text: str) -> bool:
+    """Tier-1 evidence must be a repo-relative existing file (not only a string)."""
+    raw = str(path_text or "").strip()
+    if not raw:
+        return False
+    path = Path(raw)
+    if path.is_absolute():
+        return False
+    if ".." in path.parts:
+        return False
+    return path.is_file()
+
+
+def check_evidence_data(entries: Any) -> tuple[list[str], list[str]]:
+    """Return (hard_problems, notices). Tier-2: soft-skip when drive unmounted."""
     problems: list[str] = []
+    notices: list[str] = []
+    if entries in (None, "", []):
+        return problems, notices
+    if not isinstance(entries, list):
+        problems.append("evidence_data must be a list of {logical, sha256}")
+        return problems, notices
+    try:
+        from data_io.manifest import ManifestManager  # noqa: PLC0415
+    except ImportError:
+        notices.append(
+            "evidence_data present but data_io unavailable — skipped tier-2 hash checks"
+        )
+        return problems, notices
+    try:
+        manager = ManifestManager()
+    except Exception as exc:  # noqa: BLE001 — soft path
+        notices.append(f"evidence_data: could not load manifest ({exc}); skipped")
+        return problems, notices
+    for i, row in enumerate(entries):
+        if not isinstance(row, dict):
+            problems.append(f"evidence_data[{i}] must be an object")
+            continue
+        logical = str(row.get("logical") or "").strip()
+        expected = str(row.get("sha256") or "").strip().lower()
+        if not logical or not expected:
+            problems.append(f"evidence_data[{i}] needs logical and sha256")
+            continue
+        if logical not in manager.datasets:
+            problems.append(f"evidence_data[{i}] unknown logical name {logical!r}")
+            continue
+        dataset = manager.datasets[logical]
+        if not manager.tier_available(dataset.tier):
+            notices.append(
+                f"evidence_data {logical!r}: tier {dataset.tier!r} unmounted — hash check skipped"
+            )
+            continue
+        try:
+            path = manager.resolve(logical)
+        except Exception as exc:  # noqa: BLE001
+            problems.append(f"evidence_data {logical!r}: resolve failed ({exc})")
+            continue
+        if not path.is_file():
+            problems.append(f"evidence_data {logical!r}: missing file {path}")
+            continue
+        import hashlib
+
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != expected:
+            problems.append(
+                f"evidence_data {logical!r}: sha256 mismatch "
+                f"(expected {expected[:12]}…, got {digest[:12]}…)"
+            )
+    return problems, notices
+
+
+def validate_claim_record(
+    claim: dict[str, Any],
+    *,
+    require_closed_evidence: bool,
+    lint_consequence: bool = True,
+) -> tuple[list[str], list[str]]:
+    """Return (problems, notices)."""
+    problems: list[str] = []
+    notices: list[str] = []
     claim_id = str(claim.get("id") or "").strip()
     if not claim_id:
         problems.append("claim missing id")
@@ -99,41 +231,89 @@ def validate_claim_record(claim: dict[str, Any], *, require_closed_evidence: boo
         problems.append(f"claim {claim_id!r} has invalid status {status!r}")
     if not str(claim.get("question") or "").strip():
         problems.append(f"claim {claim_id!r} missing question")
-    if not str(claim.get("consequence") or "").strip():
+    consequence = str(claim.get("consequence") or "").strip()
+    if not consequence:
         problems.append(f"claim {claim_id!r} missing consequence")
+    elif lint_consequence and not consequence_has_comparison(consequence):
+        problems.append(
+            f"claim {claim_id!r} consequence must name a comparison/baseline "
+            "(e.g. 'vs. running everything', 'vs. discarding the bucket')"
+        )
+    design = claim.get("design")
+    if design not in (None, ""):
+        if str(design) not in VALID_DESIGNS:
+            problems.append(
+                f"claim {claim_id!r} design must be observational|controlled "
+                f"(got {design!r})"
+            )
     if require_closed_evidence and status in CLOSED_CLAIM_STATUSES:
-        if not str(claim.get("evidence") or "").strip():
-            problems.append(f"claim {claim_id!r} status {status} requires evidence path")
-    return problems
+        evidence = str(claim.get("evidence") or "").strip()
+        if not evidence:
+            problems.append(
+                f"claim {claim_id!r} status {status} requires evidence path "
+                f"under {EVIDENCE_ROOT}/"
+            )
+        elif not evidence_path_ok(evidence):
+            problems.append(
+                f"claim {claim_id!r} evidence {evidence!r} must be an existing "
+                "repo-relative file (tier-1 committed summary)"
+            )
+        else:
+            # Prefer docs/evidence/<id>/…
+            path = Path(evidence)
+            if EVIDENCE_ROOT.parts[0] not in path.parts and not str(path).startswith(
+                str(EVIDENCE_ROOT)
+            ):
+                notices.append(
+                    f"claim {claim_id!r}: evidence outside {EVIDENCE_ROOT}/ "
+                    "(allowed but prefer docs/evidence/<claim_id>/)"
+                )
+        data_problems, data_notices = check_evidence_data(claim.get("evidence_data"))
+        problems.extend(data_problems)
+        notices.extend(data_notices)
+    return problems, notices
 
 
-def gate_check(state: dict[str, Any] | None = None) -> tuple[bool, list[str], dict[str, Any] | None]:
-    """Return (ok, problems, active_claim)."""
+def gate_check(
+    state: dict[str, Any] | None = None,
+) -> tuple[bool, list[str], list[str], list[dict[str, Any]]]:
+    """Return (ok, problems, notices, active_claims)."""
     state = state if state is not None else load_state()
     claims = load_claims()
-    active_id = str(state.get("active_claim_id") or "").strip()
-    if not active_id:
+    ids = active_claim_ids(state)
+    notices: list[str] = []
+    if not ids:
         return (
             False,
             [
-                "No active_claim_id. Open one: "
+                "No active claims. Open one: "
                 "uv run python scripts/svz.py claim open <id> "
-                '--question "..." --consequence "..."'
+                '--question "..." --consequence "vs. …"'
             ],
-            None,
+            notices,
+            [],
         )
-    claim = claims.get(active_id)
-    if claim is None:
+    if len(ids) > MAX_ACTIVE_CLAIMS:
         return (
             False,
-            [
-                f"active_claim_id={active_id!r} not in {CLAIMS_JSONL}. "
-                "Fix id or open the claim."
-            ],
-            None,
+            [f"Too many active claims ({len(ids)} > {MAX_ACTIVE_CLAIMS})"],
+            notices,
+            [],
         )
-    problems = validate_claim_record(claim, require_closed_evidence=True)
-    return (not problems, problems, claim)
+    problems: list[str] = []
+    active_rows: list[dict[str, Any]] = []
+    for claim_id in ids:
+        claim = claims.get(claim_id)
+        if claim is None:
+            problems.append(f"active claim {claim_id!r} not in {CLAIMS_JSONL}")
+            continue
+        row_problems, row_notices = validate_claim_record(
+            claim, require_closed_evidence=True
+        )
+        problems.extend(row_problems)
+        notices.extend(row_notices)
+        active_rows.append(claim)
+    return (not problems and bool(active_rows), problems, notices, active_rows)
 
 
 def task_symbol(status: str) -> str:
