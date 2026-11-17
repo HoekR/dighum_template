@@ -25,12 +25,13 @@ Start here for cross-project DH pipeline knowledge. See [README.md](README.md) f
 | [claims-and-eval-gate](topics/claims-and-eval-gate.md) | Thin claims ledger + `svz gate`; notebooks explore, claims conclude |
 | [macos-batch-execution-power](topics/macos-batch-execution-power.md) | Prevent macOS E-core downclocking & SSD sleep via `caffeinate -dims` |
 | [llm-pipeline-batching-strategy](topics/llm-pipeline-batching-strategy.md) | Staged batching (Step A dropout $\rightarrow$ SLM filter $\rightarrow$ HPC scale) |
+| [step-back-review](topics/step-back-review.md) | Review the series of attempts; on repeated failure question the frame — agent hands off, human steps back |
 
 ## Journal (recent)
 
 | Month | Notes |
 |-------|-------|
-| [2026-11](journal/2026-11.md) | Claims ledger + bookkeeping gatekeeper (`svz gate`) |
+| [2026-11](journal/2026-11.md) | Claims ledger + bookkeeping gatekeeper (`svz gate`); step-back review |
 | [2026-09](journal/2026-09.md) | Iteration framework + svz review / track policy |
 | [2026-08](journal/2026-08.md) | Cost-sensitive agent workflow (wvo_corr pilot) |
 | [2026-06](journal/2026-06.md) | Template repo, addons, wisdom layer |
